@@ -62,6 +62,7 @@ ADMIN_PANEL_TOKEN=fitbudget_admin
 - `POST /webhook/whatsapp` incoming message handling
 - `POST /webhook/telegram` incoming Telegram updates (`message`, `edited_message`, `channel_post`, `callback_query`)
 - If `TELEGRAM_WEBHOOK_SECRET` is set, requests must include `x-telegram-bot-api-secret-token`.
+- Telegram text/caption/callback data are processed by coach engine; non-text Telegram messages get an automatic "text-only" guidance reply.
 
 
 ## Admin Panel + Test Simulator

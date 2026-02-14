@@ -6,20 +6,22 @@ import { sendTelegramText } from '../services/telegramService.js';
 export const telegramWebhookRouter = express.Router();
 
 function getTelegramIncoming(update = {}) {
-  const msg = update.message || update.edited_message || update.channel_post || update.edited_channel_post;
+  const messageLike = update.message || update.edited_message || update.channel_post || update.edited_channel_post;
 
-  if (msg?.chat?.id && (msg?.text || msg?.caption)) {
+  if (messageLike?.chat?.id) {
     return {
-      chatId: String(msg.chat.id),
-      text: msg.text || msg.caption
+      chatId: String(messageLike.chat.id),
+      text: messageLike.text || messageLike.caption || '',
+      hasText: Boolean(messageLike.text || messageLike.caption)
     };
   }
 
   const callback = update.callback_query;
-  if (callback?.message?.chat?.id && callback?.data) {
+  if (callback?.message?.chat?.id) {
     return {
       chatId: String(callback.message.chat.id),
-      text: callback.data
+      text: callback.data || '',
+      hasText: Boolean(callback.data)
     };
   }
 
@@ -37,6 +39,14 @@ telegramWebhookRouter.post('/', async (req, res) => {
 
     const incoming = getTelegramIncoming(req.body);
     if (!incoming) {
+      return res.sendStatus(200);
+    }
+
+    if (!incoming.hasText) {
+      await sendTelegramText(
+        incoming.chatId,
+        'I currently support text messages only. Please send your update in text format (for example: meal lunch dal rice 120).'
+      );
       return res.sendStatus(200);
     }
 
