@@ -46,6 +46,9 @@ const userSchema = new mongoose.Schema(
       workout: String
     },
     timezone: { type: String, default: 'Asia/Kolkata' },
+    privacyAcceptedAt: Date,
+    termsAcceptedAt: Date,
+    phoneVerifiedAt: Date,
     onboardingComplete: { type: Boolean, default: false },
     latestMoodFlag: { type: String, enum: ['neutral', 'guilty', 'stressed'], default: 'neutral' }
   },

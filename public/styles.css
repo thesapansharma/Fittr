@@ -23,7 +23,7 @@ body {
 }
 .hero {
   display: grid;
-  grid-template-columns: 1.2fr 1fr;
+  grid-template-columns: 1.1fr 1fr;
   gap: 24px;
   align-items: stretch;
 }
@@ -33,6 +33,11 @@ body {
   border-radius: 24px;
   backdrop-filter: blur(12px);
   box-shadow: 0 10px 35px rgba(0, 0, 0, 0.35);
+}
+.float-card { animation: floatIn 700ms ease; }
+@keyframes floatIn {
+  from { transform: translateY(14px); opacity: 0.2; }
+  to { transform: translateY(0); opacity: 1; }
 }
 .hero-copy { padding: 32px; position: relative; overflow: hidden; }
 .hero-copy::after {
@@ -104,6 +109,7 @@ h1 { font-size: clamp(32px, 5vw, 52px); margin: 16px 0 12px; line-height: 1.04; 
   background: rgba(255, 255, 255, 0.06);
   color: var(--text);
 }
+select option { color: #111; }
 label { font-size: 12px; color: var(--muted); margin-bottom: 6px; display: block; }
 .field { margin-bottom: 10px; }
 .full { grid-column: 1 / -1; }
@@ -118,6 +124,19 @@ label { font-size: 12px; color: var(--muted); margin-bottom: 6px; display: block
   cursor: pointer;
   margin-top: 6px;
 }
+.btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.ghost {
+  background: rgba(255, 255, 255, 0.09);
+  border: 1px solid var(--line);
+  margin-top: 0;
+  padding: 12px;
+}
+.otp-row {
+  display: grid;
+  grid-template-columns: 160px 1fr 160px;
+  gap: 10px;
+  align-items: center;
+}
 .notice {
   margin-top: 10px;
   font-size: 13px;
@@ -125,6 +144,14 @@ label { font-size: 12px; color: var(--muted); margin-bottom: 6px; display: block
   border-radius: 10px;
   border: 1px solid var(--line);
 }
+.helper { font-size: 12px; }
+.helper a { color: #8cecff; }
+.legal {
+  max-width: 860px;
+  margin: 36px auto;
+  padding: 24px;
+}
 @media (max-width: 960px) {
   .hero { grid-template-columns: 1fr; }
+  .otp-row { grid-template-columns: 1fr; }
 }
