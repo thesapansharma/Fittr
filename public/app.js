@@ -1,0 +1,144 @@
+const { useEffect, useState } = React;
+
+function formatMedicalLabel(value) {
+  return value.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function App() {
+  const [capacity, setCapacity] = useState({ limit: 200, used: 0, remaining: 200 });
+  const [medicalOptions, setMedicalOptions] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [notice, setNotice] = useState('');
+  const [form, setForm] = useState({
+    name: '',
+    phone: '',
+    weight: '',
+    height: '',
+    goal: 'lose weight',
+    bodyShapeGoal: 'fat loss',
+    officeTiming: '9am-6pm desk',
+    sleepHours: '7',
+    exerciseHabit: 'none',
+    waterGoal: '8',
+    dailyBudget: '250',
+    dietType: 'vegetarian',
+    currentDiet: '',
+    easyDietMode: true,
+    medicalIssues: []
+  });
+
+  const loadCapacity = async () => {
+    const response = await fetch('/api/register/capacity');
+    if (!response.ok) throw new Error('Unable to load capacity');
+    const data = await response.json();
+    setCapacity(data);
+  };
+
+  const loadMedicalOptions = async () => {
+    const response = await fetch('/api/register/medical-options');
+    if (!response.ok) throw new Error('Unable to load medical options');
+    const data = await response.json();
+    setMedicalOptions(data.medicalIssues || []);
+  };
+
+  useEffect(() => {
+    Promise.all([loadCapacity(), loadMedicalOptions()]).catch(() => {
+      setNotice('Unable to load registration data right now.');
+    });
+  }, []);
+
+  const onChange = (e) => {
+    const { name, value, type, checked, options } = e.target;
+
+    if (name === 'medicalIssues') {
+      const selected = Array.from(options).filter((opt) => opt.selected).map((opt) => opt.value);
+      setForm((prev) => ({ ...prev, medicalIssues: selected }));
+      return;
+    }
+
+    setForm((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+  };
+
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setNotice('');
+
+    try {
+      const response = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form)
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Registration failed');
+
+      setNotice(`✅ ${data.message}. Welcome ${data.user.name}! Free slots left: ${data.freeAccess.remaining}`);
+      await loadCapacity();
+    } catch (error) {
+      setNotice(`❌ ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const usedPct = Math.min((capacity.used / capacity.limit) * 100, 100);
+
+  return (
+    <div className="page">
+      <div className="hero">
+        <section className="glass hero-copy">
+          <span className="badge">PERSONAL HEALTH COACH • WHATSAPP SUPPORT</span>
+          <h1>Simple, Trusted Health Coaching for Everyday Life</h1>
+          <p className="muted">
+            Register now for personalized health support — free for the first <b>200</b> users.
+            Get practical meal guidance, daily activity support, hydration reminders, and budget-friendly wellness tips.
+          </p>
+          <div className="feature-grid">
+            <div className="feature">✅ Easy to understand guidance</div>
+            <div className="feature">🧭 Practical daily health support</div>
+            <div className="feature">💧 Helpful hydration reminders</div>
+            <div className="feature">🥗 Personalized diet and medical care tips</div>
+          </div>
+        </section>
+
+        <section className="glass form-card">
+          <div className="capacity">
+            <div><b>Free Access Capacity</b> — {capacity.remaining} / {capacity.limit} seats left</div>
+            <div className="capacity-bar"><div className="capacity-fill" style={{ width: `${usedPct}%` }} /></div>
+          </div>
+
+          <form onSubmit={onSubmit}>
+            <div className="grid">
+              <div className="field"><label>Name</label><input className="input" name="name" value={form.name} onChange={onChange} required /></div>
+              <div className="field"><label>Phone</label><input className="input" name="phone" value={form.phone} onChange={onChange} required /></div>
+              <div className="field"><label>Goal</label><select name="goal" value={form.goal} onChange={onChange}><option>lose weight</option><option>stay fit</option><option>gain muscle</option></select></div>
+              <div className="field"><label>Body Shape Goal</label><input className="input" name="bodyShapeGoal" value={form.bodyShapeGoal} onChange={onChange} /></div>
+              <div className="field"><label>Diet Type</label><select name="dietType" value={form.dietType} onChange={onChange}><option>vegetarian</option><option>vegan</option><option>eggetarian</option><option>non_vegetarian</option></select></div>
+              <div className="field"><label>Current Diet</label><input className="input" name="currentDiet" value={form.currentDiet} onChange={onChange} required /></div>
+              <div className="field"><label>Daily Budget (₹)</label><input className="input" name="dailyBudget" value={form.dailyBudget} onChange={onChange} /></div>
+              <div className="field"><label>Water Goal (glasses)</label><input className="input" name="waterGoal" value={form.waterGoal} onChange={onChange} /></div>
+              <div className="field full"><label>Office Timing / Work Type</label><input className="input" name="officeTiming" value={form.officeTiming} onChange={onChange} /></div>
+              <div className="field full">
+                <label>Medical Issues (General list)</label>
+                <select className="input" name="medicalIssues" multiple value={form.medicalIssues} onChange={onChange} size="6">
+                  {medicalOptions.map((option) => (
+                    <option key={option} value={option}>{formatMedicalLabel(option)}</option>
+                  ))}
+                </select>
+                <div className="muted" style={{ fontSize: '12px', marginTop: '6px' }}>Hold Ctrl/Cmd to select multiple issues.</div>
+              </div>
+              <div className="field full muted" style={{ fontSize: '13px' }}>
+                <input type="checkbox" name="easyDietMode" checked={form.easyDietMode} onChange={onChange} /> Keep diet changes easy and gradual
+              </div>
+            </div>
+            <button className="btn" disabled={loading || capacity.remaining <= 0}>{loading ? 'Registering...' : 'Register Now (Free Access)'}</button>
+            {notice && <div className="notice">{notice}</div>}
+          </form>
+        </section>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
