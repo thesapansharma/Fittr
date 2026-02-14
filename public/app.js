@@ -88,17 +88,17 @@ function App() {
     <div className="page">
       <div className="hero">
         <section className="glass hero-copy">
-          <span className="badge">AI FITNESS COACH • WHATSAPP READY</span>
-          <h1>Modern Health Coaching for Busy People</h1>
+          <span className="badge">PERSONAL HEALTH COACH • WHATSAPP SUPPORT</span>
+          <h1>Simple, Trusted Health Coaching for Everyday Life</h1>
           <p className="muted">
-            Register now for premium access — free for first <b>200</b> users. Smart diet suggestions, workout guidance,
-            hydration reminders, budget-aware meals, and medical-aware coaching.
+            Register now for personalized health support — free for the first <b>200</b> users.
+            Get practical meal guidance, daily activity support, hydration reminders, and budget-friendly wellness tips.
           </p>
           <div className="feature-grid">
-            <div className="feature">⚡ Trending high-tech UI</div>
-            <div className="feature">🤖 AI + rule-based reliability</div>
-            <div className="feature">💧 Smart reminder automation</div>
-            <div className="feature">🥗 Diet + medical personalization</div>
+            <div className="feature">✅ Easy to understand guidance</div>
+            <div className="feature">🧭 Practical daily health support</div>
+            <div className="feature">💧 Helpful hydration reminders</div>
+            <div className="feature">🥗 Personalized diet and medical care tips</div>
           </div>
         </section>
 
