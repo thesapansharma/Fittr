@@ -4,7 +4,8 @@ const reminderSchema = new mongoose.Schema(
   {
     water: { type: String, default: '10:30' },
     meal: { type: String, default: '13:00' },
-    workout: { type: String, default: '18:30' }
+    workout: { type: String, default: '18:30' },
+    sleep: { type: String, default: '22:00' }
   },
   { _id: false }
 );
@@ -46,7 +47,8 @@ const userSchema = new mongoose.Schema(
     lastReminderSent: {
       water: String,
       meal: String,
-      workout: String
+      workout: String,
+      sleep: String
     },
     timezone: { type: String, default: 'Asia/Kolkata' },
     privacyAcceptedAt: Date,

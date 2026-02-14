@@ -82,6 +82,8 @@ ADMIN_PANEL_TOKEN=fitbudget_admin
 - `medical diabetes high bp`
 - `set reminder water 10:30`
 - `set reminder workout 18:30`
+- `set reminder sleep 22:00`
+- `sleep time 22:00`
 - `summary`
 - emotional phrases like `I feel guilty` or `I feel sad`
 - product feedback reply like `feedback 5/5 love reminders, improve meal variety`
@@ -110,7 +112,7 @@ Cron schedules included for:
 - nightly sleep reminder
 - daily automated check-in message for all onboarded users
 - workout logging + suggestion support with configurable workout reminder timing
-- custom-time reminders per user (water/meal/workout)
+- custom-time reminders per user (water/meal/workout/sleep)
 - automatic bi-weekly WhatsApp product feedback check-in
 
 ## Notes

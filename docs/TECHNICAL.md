@@ -147,7 +147,7 @@ Flow:
 - evening healthy-dinner prompt
 - night sleep reminder
 - daily automated check-in message
-- user-custom reminder times (meal/water/workout)
+- user-custom reminder times (meal/water/workout/sleep)
 - bi-weekly product feedback message
 
 All jobs iterate onboarding-complete users and use WhatsApp send service.

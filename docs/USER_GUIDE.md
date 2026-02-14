@@ -55,6 +55,8 @@ Once registered, message your bot number and start logging activities.
 - `set reminder water 10:30`
 - `set reminder meal 13:15`
 - `set reminder workout 18:30`
+- `set reminder sleep 22:00`
+- `sleep time 22:00`
 
 ### Emotional support
 - messages like “I feel guilty”, “I feel sad”, etc. will get encouragement.
@@ -68,7 +70,7 @@ Once registered, message your bot number and start logging activities.
 - Personalized diet + lifestyle suggestions.
 - Medical-aware guidance (non-diagnostic).
 - Budget-aware nudges and warnings.
-- Hydration and activity reminders.
+- Hydration, workout, and sleep reminders.
 - Daily summary report.
 - Automatic daily check-in message on WhatsApp.
 - Bi-weekly product feedback check-in on WhatsApp.

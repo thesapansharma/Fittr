@@ -257,7 +257,7 @@ export async function handleIncoming(phone, text) {
           ? 'Great. Focus on protein intake and proper recovery to avoid overtraining.'
           : 'Nice. Add squats, wall pushups, and stretching at home.';
 
-    const response = ['Onboarding complete ✅', exerciseLine, `Diet coaching: ${getDietTypeHint(user)}`, `Workout reminder time: ${user?.reminderTimes?.workout || '18:30'}`, getMedicalGuidance(user)]
+    const response = ['Onboarding complete ✅', exerciseLine, `Diet coaching: ${getDietTypeHint(user)}`, `Workout reminder time: ${user?.reminderTimes?.workout || '18:30'}`, `Sleep reminder time: ${user?.reminderTimes?.sleep || '22:00'}`, getMedicalGuidance(user)]
       .filter(Boolean)
       .join('\n');
 
@@ -294,9 +294,10 @@ export async function handleIncoming(phone, text) {
     if (normalized.includes('water')) user.reminderTimes.water = time;
     if (normalized.includes('workout') || normalized.includes('exercise')) user.reminderTimes.workout = time;
     if (normalized.includes('meal') || normalized.includes('diet')) user.reminderTimes.meal = time;
+    if (normalized.includes('sleep') || normalized.includes('bed') || normalized.includes('night')) user.reminderTimes.sleep = time;
     await user.save();
 
-    const response = `Reminder time updated ⏰ Water: ${user.reminderTimes.water}, Meal: ${user.reminderTimes.meal}, Workout: ${user.reminderTimes.workout}.`;
+    const response = `Reminder time updated ⏰ Water: ${user.reminderTimes.water}, Meal: ${user.reminderTimes.meal}, Workout: ${user.reminderTimes.workout}, Sleep: ${user.reminderTimes.sleep || '22:00'}.`;
     await saveMessage(user._id, response, 'outgoing');
     return response;
   }
@@ -338,6 +339,22 @@ export async function handleIncoming(phone, text) {
     const response = `🏃 Workout suggestion:
 ${getWorkoutSuggestion(user)}
 You can set custom timing: set reminder workout 18:30`;
+    await saveMessage(user._id, response, 'outgoing');
+    return response;
+  }
+
+
+  if (normalized.startsWith('sleep time') || normalized.startsWith('set sleep')) {
+    const time = extractTime(normalized);
+    if (!time) {
+      const response = 'Use: sleep time 22:00';
+      await saveMessage(user._id, response, 'outgoing');
+      return response;
+    }
+
+    user.reminderTimes.sleep = time;
+    await user.save();
+    const response = `Sleep reminder updated 😴 ${user.reminderTimes.sleep}`;
     await saveMessage(user._id, response, 'outgoing');
     return response;
   }
@@ -420,6 +437,8 @@ You can set custom timing: set reminder workout 18:30`;
     '- diet type vegetarian',
     '- medical diabetes high bp thyroid',
     '- set reminder water 10:30',
+    '- set reminder sleep 22:00',
+    '- sleep time 22:00',
     '- summary'
   ].join('\n');
 

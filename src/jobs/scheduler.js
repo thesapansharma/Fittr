@@ -27,7 +27,8 @@ async function sendCustomTimedReminders() {
       const reminderConfigs = [
         { key: 'water', text: '💧 Water reminder: drink water now and stay hydrated.' },
         { key: 'meal', text: '🥗 Meal reminder: choose a balanced plate (protein + fiber + controlled carbs).' },
-        { key: 'workout', text: '🏃 Workout reminder: do your planned session or at least a 15-minute walk.' }
+        { key: 'workout', text: '🏃 Workout reminder: do your planned session or at least a 15-minute walk.' },
+        { key: 'sleep', text: '😴 Sleep reminder: start wind-down now and target consistent sleep timing.' }
       ];
 
       let changed = false;
