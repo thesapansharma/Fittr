@@ -1,7 +1,7 @@
 import express from 'express';
 import { config } from '../config.js';
 import { handleIncoming } from '../services/coachEngine.js';
-import { sendWhatsAppText } from '../services/whatsappService.js';
+import { sendMessage } from '../services/messagingService.js';
 
 export const webhookRouter = express.Router();
 
@@ -31,7 +31,7 @@ webhookRouter.post('/', async (req, res) => {
     const text = incoming.text?.body || '';
 
     const response = await handleIncoming(phone, text);
-    await sendWhatsAppText(phone, response);
+    await sendMessage(phone, response);
 
     return res.sendStatus(200);
   } catch (error) {

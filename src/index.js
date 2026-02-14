@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 import { config } from './config.js';
 import { webhookRouter } from './routes/webhook.js';
 import { registerRouter } from './routes/register.js';
+import { telegramWebhookRouter } from './routes/telegramWebhook.js';
 import { adminRouter } from './routes/admin.js';
 import { startSchedulers } from './jobs/scheduler.js';
 
@@ -22,6 +23,7 @@ app.get('/health', (_req, res) => {
 });
 
 app.use('/webhook/whatsapp', webhookRouter);
+app.use('/webhook/telegram', telegramWebhookRouter);
 app.use('/api/register', registerRouter);
 app.use('/api/admin', adminRouter);
 

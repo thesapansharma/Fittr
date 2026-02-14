@@ -37,6 +37,10 @@ Once registered, message your bot number and start logging activities.
 - `workout walk 20`
 - `exercise yoga 30`
 
+### Workout suggestions
+- `workout suggest`
+- `workout plan`
+
 ### Daily summary
 - `summary`
 
@@ -102,3 +106,6 @@ Once registered, message your bot number and start logging activities.
 ## 8. Admin & Support (for operators)
 - Admin panel is available at `/admin` for internal team use.
 - End users should contact support if onboarding or messaging issues persist.
+
+
+Note: Current active default communication provider is Telegram (`COMMUNICATION_PROVIDER=telegram`).

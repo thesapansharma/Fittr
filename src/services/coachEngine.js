@@ -85,6 +85,23 @@ function getCurrencySymbol(currency) {
   return symbols[currency] || '';
 }
 
+
+function getWorkoutSuggestion(user) {
+  const base = user.exerciseHabit === 'gym'
+    ? 'Gym plan: 40-50 min strength training + 10 min cool down walk.'
+    : user.exerciseHabit === 'beginner'
+      ? 'Beginner plan: 20-25 min brisk walk + 8 squats + 8 wall pushups + stretching.'
+      : 'Starter plan: 15-20 min walk + 5-10 min mobility/stretching.';
+
+  const officeAddOn = user.jobType === 'desk'
+    ? 'Desk tip: every hour, stand and do 2-3 min neck/back movement.'
+    : 'Keep active shifts balanced with hydration and recovery.';
+
+  return `${base}
+${officeAddOn}
+Recommended workout reminder: ${user?.reminderTimes?.workout || '18:30'}.`;
+}
+
 function getMedicalGuidance(user) {
   const issues = user.medicalIssues || [];
   if (!issues.length) return '';
@@ -240,7 +257,7 @@ export async function handleIncoming(phone, text) {
           ? 'Great. Focus on protein intake and proper recovery to avoid overtraining.'
           : 'Nice. Add squats, wall pushups, and stretching at home.';
 
-    const response = ['Onboarding complete ✅', exerciseLine, `Diet coaching: ${getDietTypeHint(user)}`, getMedicalGuidance(user)]
+    const response = ['Onboarding complete ✅', exerciseLine, `Diet coaching: ${getDietTypeHint(user)}`, `Workout reminder time: ${user?.reminderTimes?.workout || '18:30'}`, getMedicalGuidance(user)]
       .filter(Boolean)
       .join('\n');
 
@@ -312,6 +329,15 @@ export async function handleIncoming(phone, text) {
     user.dietType = nextType;
     await user.save();
     const response = `Diet type updated ✅ ${getDietTypeHint(user)}`;
+    await saveMessage(user._id, response, 'outgoing');
+    return response;
+  }
+
+
+  if (normalized.includes('workout suggest') || normalized.includes('exercise suggest') || normalized.includes('workout plan')) {
+    const response = `🏃 Workout suggestion:
+${getWorkoutSuggestion(user)}
+You can set custom timing: set reminder workout 18:30`;
     await saveMessage(user._id, response, 'outgoing');
     return response;
   }
@@ -390,6 +416,7 @@ export async function handleIncoming(phone, text) {
     '- meal lunch samosa 40',
     '- water 2',
     '- workout walk 20',
+    '- workout suggest',
     '- diet type vegetarian',
     '- medical diabetes high bp thyroid',
     '- set reminder water 10:30',

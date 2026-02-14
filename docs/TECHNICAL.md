@@ -2,7 +2,7 @@
 
 ## 1. Architecture Overview
 FitBudget is a Node.js + Express + MongoDB application that serves:
-- WhatsApp webhook processing for inbound/outbound chat coaching.
+- Telegram/WhatsApp webhook processing for inbound/outbound chat coaching.
 - Registration APIs and onboarding data capture.
 - Admin APIs and admin web panel for operations.
 - Scheduled automation jobs (reminders, summaries, product feedback cadence).
@@ -21,7 +21,7 @@ Primary runtime layers:
 - `src/index.js`: app bootstrapping, Mongo connect, router mounting, static hosting.
 - `src/config.js`: env configuration.
 - `src/routes/`
-  - `webhook.js`: WhatsApp webhook verify + message intake.
+  - `webhook.js`: Telegram/WhatsApp webhook verify + message intake.
   - `register.js`: OTP flow, registration, options APIs, free-cap controls.
   - `admin.js`: token-gated operational endpoints + simulator.
 - `src/services/`
@@ -132,7 +132,7 @@ Flow:
    - reminder updates
    - medical updates
    - diet type updates
-   - water/workout/meal logging
+   - water/workout/meal logging + workout-suggestion intent
    - summary generation
 5. For unknown/free-form input:
    - call OpenAI (if configured), else fallback help text.
@@ -179,7 +179,7 @@ Security note:
 ## 10. Deployment Notes
 1. Provision MongoDB.
 2. Set all required `.env` values.
-3. Configure WhatsApp webhook URL to `/webhook/whatsapp`.
+3. Configure Telegram/WhatsApp webhook URL to `/webhook/whatsapp`.
 4. Start service (`npm run dev` or process manager in production).
 5. Lock down admin token and rotate periodically.
 

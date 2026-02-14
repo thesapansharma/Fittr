@@ -19,6 +19,7 @@ function App() {
   const [otpCode, setOtpCode] = useState('');
   const [verifyToken, setVerifyToken] = useState('');
   const [showOtpModal, setShowOtpModal] = useState(false);
+  const [otpRequired, setOtpRequired] = useState(true);
 
   const [form, setForm] = useState({
     name: '',
@@ -46,21 +47,25 @@ function App() {
   });
 
   const loadInitialData = async () => {
-    const [capacityRes, medicalRes, officeRes] = await Promise.all([
+    const [capacityRes, medicalRes, officeRes, channelRes] = await Promise.all([
       fetch('/api/register/capacity'),
       fetch('/api/register/medical-options'),
-      fetch('/api/register/office-timing-options')
+      fetch('/api/register/office-timing-options'),
+      fetch('/api/register/channel')
     ]);
 
-    if (!capacityRes.ok || !medicalRes.ok || !officeRes.ok) {
+    if (!capacityRes.ok || !medicalRes.ok || !officeRes.ok || !channelRes.ok) {
       throw new Error('Unable to load registration data');
     }
 
     const capacityData = await capacityRes.json();
     const medicalData = await medicalRes.json();
     const officeData = await officeRes.json();
+    const channelData = await channelRes.json();
 
     setCapacity(capacityData);
+    setOtpRequired(Boolean(channelData.otpRequired));
+    if (!channelData.otpRequired) setVerifyToken('telegram-mode-token');
     setMedicalOptions(medicalData.medicalIssues || []);
     setOfficeOptions({
       officeStarts: officeData.officeStarts || [],
@@ -144,7 +149,7 @@ function App() {
     e.preventDefault();
     setNotice('');
 
-    if (!verifyToken) {
+    if (otpRequired && !verifyToken) {
       setShowOtpModal(true);
       setNotice('⚠️ Please verify OTP to continue.');
       return;
@@ -198,7 +203,7 @@ function App() {
             <div className="capacity-bar"><div className="capacity-fill" style={{ width: `${usedPct}%` }} /></div>
           </div>
 
-          {verifyToken ? <div className="otp-ok">✅ WhatsApp number verified</div> : <button type="button" className="btn ghost" onClick={() => setShowOtpModal(true)}>Verify WhatsApp OTP</button>}
+          {otpRequired ? (verifyToken ? <div className="otp-ok">✅ WhatsApp number verified</div> : <button type="button" className="btn ghost" onClick={() => setShowOtpModal(true)}>Verify WhatsApp OTP</button>) : <div className="otp-ok">✅ Telegram mode: OTP not required</div>}
 
           <form onSubmit={onSubmit}>
             <div className="grid">
@@ -246,7 +251,7 @@ function App() {
         </section>
       </div>
 
-      {showOtpModal && (
+      {otpRequired && showOtpModal && (
         <div className="modal-backdrop">
           <div className="glass modal">
             <h3>Verify WhatsApp Number</h3>

@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import express from 'express';
 import { User } from '../models/User.js';
-import { sendWhatsAppText } from '../services/whatsappService.js';
+import { sendMessage, isOtpRequired } from '../services/messagingService.js';
 
 export const registerRouter = express.Router();
 
@@ -54,6 +54,10 @@ registerRouter.get('/office-timing-options', (_req, res) => {
   });
 });
 
+registerRouter.get('/channel', (_req, res) => {
+  return res.json({ provider: process.env.COMMUNICATION_PROVIDER || 'telegram', otpRequired: isOtpRequired() });
+});
+
 registerRouter.get('/capacity', async (_req, res) => {
   try {
     const capacity = await getUsageCounts();
@@ -77,7 +81,7 @@ registerRouter.post('/send-otp', async (req, res) => {
       attempts: 0
     });
 
-    await sendWhatsAppText(phone, `Your FitBudget verification OTP is ${otp}. It is valid for 10 minutes.`);
+    await sendMessage(phone, `Your FitBudget verification OTP is ${otp}. It is valid for 10 minutes.`);
     return res.json({ message: 'OTP sent on WhatsApp' });
   } catch (error) {
     return res.status(500).json({ error: 'Failed to send OTP', details: error.message });
@@ -85,6 +89,9 @@ registerRouter.post('/send-otp', async (req, res) => {
 });
 
 registerRouter.post('/verify-otp', (req, res) => {
+  if (!isOtpRequired()) {
+    return res.json({ message: 'OTP skipped for Telegram mode', verifyToken: 'telegram-mode-token' });
+  }
   const phone = normalizePhone(req.body?.phone);
   const otp = String(req.body?.otp || '').trim();
 
@@ -149,9 +156,11 @@ registerRouter.post('/', async (req, res) => {
       return res.status(400).json({ error: 'Privacy policy and terms acceptance are required' });
     }
 
-    const verification = verifyStore.get(normalizedPhone);
-    if (!verification || verification.expiresAt < Date.now() || verification.token !== verifyToken) {
-      return res.status(400).json({ error: 'Phone verification required. Verify OTP before registering.' });
+    if (isOtpRequired()) {
+      const verification = verifyStore.get(normalizedPhone);
+      if (!verification || verification.expiresAt < Date.now() || verification.token !== verifyToken) {
+        return res.status(400).json({ error: 'Phone verification required. Verify OTP before registering.' });
+      }
     }
 
     const selectedWorkType = workTypeOptions.includes(workType) ? workType : 'desk';
@@ -206,7 +215,7 @@ registerRouter.post('/', async (req, res) => {
     };
 
     const user = await User.findOneAndUpdate({ phone: normalizedPhone }, { $set: update }, { upsert: true, new: true, setDefaultsOnInsert: true });
-    verifyStore.delete(normalizedPhone);
+    if (isOtpRequired()) verifyStore.delete(normalizedPhone);
 
     const capacity = await getUsageCounts();
     return res.status(existing ? 200 : 201).json({

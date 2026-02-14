@@ -13,7 +13,7 @@ A low-cost WhatsApp AI health coach backend for:
 ## Tech Stack
 - Node.js + Express
 - MongoDB + Mongoose
-- WhatsApp Cloud API (cheap vs CPaaS intermediaries)
+- Telegram Bot API (active mode) + WhatsApp Cloud API (optional fallback)
 - node-cron for background reminders
 - Optional OpenAI Responses API for free-form coaching replies with user context (India/INR, gender, food preference)
 - React-based modern registration UI (served from Express)
@@ -36,11 +36,14 @@ Create `.env`:
 ```env
 PORT=3000
 MONGO_URI=mongodb://127.0.0.1:27017/fitbudget
+COMMUNICATION_PROVIDER=telegram
 WHATSAPP_PROVIDER=meta-cloud
 WHATSAPP_TOKEN=your_meta_token
 WHATSAPP_PHONE_NUMBER_ID=your_phone_number_id
 WHATSAPP_VERIFY_TOKEN=fitbudget_verify_token
 WHATSAPP_GRAPH_VERSION=v21.0
+TELEGRAM_BOT_TOKEN=your_telegram_bot_token
+TELEGRAM_WEBHOOK_SECRET=optional_secret
 OPENAI_API_KEY=your_openai_api_key
 OPENAI_MODEL=gpt-4o-mini
 OPENAI_BASE_URL=https://api.openai.com/v1
@@ -55,8 +58,9 @@ ADMIN_PANEL_TOKEN=fitbudget_admin
 - Default model is `gpt-4o-mini` (configurable via `OPENAI_MODEL`).
 
 ## Webhook Endpoints
-- `GET /webhook/whatsapp` verification
+- `GET /webhook/whatsapp` verification (if WhatsApp mode)
 - `POST /webhook/whatsapp` incoming message handling
+- `POST /webhook/telegram` incoming Telegram updates
 
 
 ## Admin Panel + Test Simulator
@@ -73,9 +77,11 @@ ADMIN_PANEL_TOKEN=fitbudget_admin
 - `meal lunch samosa 40`
 - `water 2`
 - `workout walk 20`
+- `workout suggest`
 - `diet type vegetarian`
 - `medical diabetes high bp`
 - `set reminder water 10:30`
+- `set reminder workout 18:30`
 - `summary`
 - emotional phrases like `I feel guilty` or `I feel sad`
 - product feedback reply like `feedback 5/5 love reminders, improve meal variety`
@@ -103,6 +109,7 @@ Cron schedules included for:
 - evening light-dinner reminder
 - nightly sleep reminder
 - daily automated check-in message for all onboarded users
+- workout logging + suggestion support with configurable workout reminder timing
 - custom-time reminders per user (water/meal/workout)
 - automatic bi-weekly WhatsApp product feedback check-in
 
@@ -128,6 +135,7 @@ git push --force-with-lease
 
 
 ## Registration API (First 200 Users Free)
+- `GET /api/register/channel` → returns active communication provider and whether OTP is required.
 - `GET /api/register/capacity` → returns `{ limit, used, remaining }`.
 - `GET /api/register/medical-options` → returns supported medical issue list for dropdown UI.
 - `GET /api/register/office-timing-options` → returns selectable `officeStarts`, `officeEnds`, `workTypes`, plus dropdown options for `genders` and `foodPreferences` (country removed; currency fixed to INR for India).

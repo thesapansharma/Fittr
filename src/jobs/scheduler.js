@@ -1,14 +1,14 @@
 import cron from 'node-cron';
 import dayjs from 'dayjs';
 import { listUsersForAutomation } from '../services/coachEngine.js';
-import { sendWhatsAppText } from '../services/whatsappService.js';
+import { sendMessage } from '../services/messagingService.js';
 
 async function sendToAllUsers(messageFactory) {
   const users = await listUsersForAutomation();
   await Promise.all(
     users.map(async (user) => {
       const msg = messageFactory(user);
-      await sendWhatsAppText(user.phone, msg);
+      await sendMessage(user.phone, msg);
     })
   );
 }
@@ -34,7 +34,7 @@ async function sendCustomTimedReminders() {
 
       for (const reminder of reminderConfigs) {
         if (reminders[reminder.key] === currentTime && lastSent[reminder.key] !== todayKey) {
-          await sendWhatsAppText(user.phone, reminder.text);
+          await sendMessage(user.phone, reminder.text);
           user.lastReminderSent = { ...lastSent, [reminder.key]: todayKey };
           changed = true;
         }
@@ -71,7 +71,7 @@ async function sendBiWeeklyFeedbackRequests() {
         '3) One thing we should improve'
       ].join('\n');
 
-      await sendWhatsAppText(user.phone, message);
+      await sendMessage(user.phone, message);
       user.lastProductFeedbackAt = now.toDate();
       await user.save();
     })
