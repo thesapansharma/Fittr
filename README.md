@@ -16,6 +16,7 @@ A low-cost WhatsApp AI health coach backend for:
 - WhatsApp Cloud API (cheap vs CPaaS intermediaries)
 - node-cron for background reminders
 
+
 ## Quick Start
 
 ```bash
@@ -35,7 +36,16 @@ WHATSAPP_TOKEN=your_meta_token
 WHATSAPP_PHONE_NUMBER_ID=your_phone_number_id
 WHATSAPP_VERIFY_TOKEN=fitbudget_verify_token
 WHATSAPP_GRAPH_VERSION=v21.0
+OPENAI_API_KEY=your_openai_api_key
+OPENAI_MODEL=gpt-4o-mini
+OPENAI_BASE_URL=https://api.openai.com/v1
 ```
+
+
+## AI Model Support
+- By default, coaching works with rule-based logic.
+- If `OPENAI_API_KEY` is set, unknown/free-form user messages are sent to OpenAI Responses API.
+- Default model is `gpt-4o-mini` (configurable via `OPENAI_MODEL`).
 
 ## Webhook Endpoints
 - `GET /webhook/whatsapp` verification

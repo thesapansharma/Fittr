@@ -6,6 +6,9 @@ import { Message } from '../models/Message.js';
 import { User } from '../models/User.js';
 import { foodCalories, foodSwaps } from './foodData.js';
 
+import { getAiCoachReply } from './openaiService.js';
+
+
 const emotionalKeywords = ['guilty', 'ate too much', 'failed', 'binge', 'stress eating', 'sad', 'low', 'depressed'];
 
 const medicalKeywords = {
@@ -315,6 +318,13 @@ export async function handleIncoming(phone, text) {
     const response = `${base}\n${swapLine}\n${budgetWarning}\n${sleepTip}\n${getDietTypeHint(user)}\n${getMedicalGuidance(user)}`;
     await saveMessage(user._id, response, 'outgoing');
     return response;
+  }
+
+
+  const aiReply = await getAiCoachReply(user, incoming);
+  if (aiReply) {
+    await saveMessage(user._id, aiReply, 'outgoing');
+    return aiReply;
   }
 
   const fallback = [

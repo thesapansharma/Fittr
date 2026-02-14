@@ -11,5 +11,10 @@ export const config = {
     phoneNumberId: process.env.WHATSAPP_PHONE_NUMBER_ID || '',
     verifyToken: process.env.WHATSAPP_VERIFY_TOKEN || 'fitbudget_verify_token',
     graphVersion: process.env.WHATSAPP_GRAPH_VERSION || 'v21.0'
+  },
+  openai: {
+    apiKey: process.env.OPENAI_API_KEY || '',
+    model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
+    baseUrl: process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1'
   }
 };
