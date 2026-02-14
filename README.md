@@ -15,7 +15,7 @@ A low-cost WhatsApp AI health coach backend for:
 - MongoDB + Mongoose
 - WhatsApp Cloud API (cheap vs CPaaS intermediaries)
 - node-cron for background reminders
-
+- Optional OpenAI Responses API for free-form coaching replies
 
 ## Quick Start
 
@@ -87,3 +87,20 @@ Cron schedules included for:
 
 ## Notes
 If WhatsApp credentials are missing, outbound messages are printed in logs (mock mode) so local development stays simple.
+
+
+## Keep PR Conflict-Free with `main`
+Before opening or updating a PR, sync your branch with `main`:
+
+```bash
+git fetch origin
+git rebase origin/main
+# resolve conflicts if prompted
+git rebase --continue
+```
+
+If your branch is already pushed, update remote branch after rebase:
+
+```bash
+git push --force-with-lease
+```

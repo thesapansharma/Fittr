@@ -5,9 +5,7 @@ import { ExerciseLog } from '../models/ExerciseLog.js';
 import { Message } from '../models/Message.js';
 import { User } from '../models/User.js';
 import { foodCalories, foodSwaps } from './foodData.js';
-
 import { getAiCoachReply } from './openaiService.js';
-
 
 const emotionalKeywords = ['guilty', 'ate too much', 'failed', 'binge', 'stress eating', 'sad', 'low', 'depressed'];
 
@@ -319,7 +317,6 @@ export async function handleIncoming(phone, text) {
     await saveMessage(user._id, response, 'outgoing');
     return response;
   }
-
 
   const aiReply = await getAiCoachReply(user, incoming);
   if (aiReply) {
