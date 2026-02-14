@@ -64,7 +64,7 @@ OPENAI_BASE_URL=https://api.openai.com/v1
 
 ## New Personalized Health Features
 - **Diet type profiles**: vegetarian, vegan, eggetarian, non_vegetarian.
-- **Medical issue handling**: diabetes, high BP, kidney stone.
+- **Medical issue handling**: broader general list (diabetes, high BP, kidney stone, thyroid, PCOS, cholesterol, fatty liver, acidity, IBS, anemia, asthma, arthritis).
 - **Meal suggestions based on medical profile**:
   - diabetes: lower sugar / low-GI guidance
   - high BP: low salt guidance
@@ -109,8 +109,9 @@ git push --force-with-lease
 
 ## Registration API (First 200 Users Free)
 - `GET /api/register/capacity` → returns `{ limit, used, remaining }`.
+- `GET /api/register/medical-options` → returns supported medical issue list for dropdown UI.
 - `POST /api/register` → registers/updates a user profile and enforces free access cap for new signups.
 
 ### Web UI
 - Open `/` to access the modern React registration page.
-- The page shows live seat usage and supports profile inputs (goal, body-shape target, diet type, medical issues, office timing, and budget).
+- The page shows live seat usage and supports profile inputs (goal, body-shape target, diet type, office timing, budget, and a multi-select medical issue dropdown).

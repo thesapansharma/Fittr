@@ -4,6 +4,7 @@ import { User } from '../models/User.js';
 export const registerRouter = express.Router();
 
 const FREE_ACCESS_LIMIT = 200;
+const supportedMedicalIssues = ['diabetes', 'high_bp', 'kidney_stone', 'thyroid', 'pcos', 'cholesterol', 'fatty_liver', 'acidity', 'ibs', 'anemia', 'asthma', 'arthritis'];
 
 async function getUsageCounts() {
   const used = await User.countDocuments({ onboardingComplete: true });
@@ -13,6 +14,10 @@ async function getUsageCounts() {
     remaining: Math.max(FREE_ACCESS_LIMIT - used, 0)
   };
 }
+
+registerRouter.get('/medical-options', (_req, res) => {
+  return res.json({ medicalIssues: supportedMedicalIssues });
+});
 
 registerRouter.get('/capacity', async (_req, res) => {
   try {
@@ -61,7 +66,7 @@ registerRouter.post('/', async (req, res) => {
     }
 
     const nextMedicalIssues = Array.isArray(medicalIssues)
-      ? medicalIssues.filter((v) => ['diabetes', 'high_bp', 'kidney_stone'].includes(v))
+      ? medicalIssues.map((v) => String(v).toLowerCase().replace(/\s+/g, '_')).filter((v) => supportedMedicalIssues.includes(v))
       : [];
 
     const update = {

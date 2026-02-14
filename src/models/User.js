@@ -36,7 +36,7 @@ const userSchema = new mongoose.Schema(
     },
     medicalIssues: {
       type: [String],
-      enum: ['diabetes', 'high_bp', 'kidney_stone'],
+      enum: ['diabetes', 'high_bp', 'kidney_stone', 'thyroid', 'pcos', 'cholesterol', 'fatty_liver', 'acidity', 'ibs', 'anemia', 'asthma', 'arthritis'],
       default: []
     },
     reminderTimes: { type: reminderSchema, default: () => ({}) },

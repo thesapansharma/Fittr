@@ -1,7 +1,12 @@
 const { useEffect, useState } = React;
 
+function formatMedicalLabel(value) {
+  return value.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
 function App() {
   const [capacity, setCapacity] = useState({ limit: 200, used: 0, remaining: 200 });
+  const [medicalOptions, setMedicalOptions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [notice, setNotice] = useState('');
   const [form, setForm] = useState({
@@ -23,37 +28,42 @@ function App() {
   });
 
   const loadCapacity = async () => {
-    try {
-      const response = await fetch('/api/register/capacity');
-      const data = await response.json();
-      setCapacity(data);
-    } catch {
-      setNotice('Unable to load capacity right now.');
-    }
+    const response = await fetch('/api/register/capacity');
+    if (!response.ok) throw new Error('Unable to load capacity');
+    const data = await response.json();
+    setCapacity(data);
+  };
+
+  const loadMedicalOptions = async () => {
+    const response = await fetch('/api/register/medical-options');
+    if (!response.ok) throw new Error('Unable to load medical options');
+    const data = await response.json();
+    setMedicalOptions(data.medicalIssues || []);
   };
 
   useEffect(() => {
-    loadCapacity();
+    Promise.all([loadCapacity(), loadMedicalOptions()]).catch(() => {
+      setNotice('Unable to load registration data right now.');
+    });
   }, []);
 
   const onChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setForm((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
-  };
+    const { name, value, type, checked, options } = e.target;
 
-  const toggleMedical = (value) => {
-    setForm((prev) => ({
-      ...prev,
-      medicalIssues: prev.medicalIssues.includes(value)
-        ? prev.medicalIssues.filter((v) => v !== value)
-        : [...prev.medicalIssues, value]
-    }));
+    if (name === 'medicalIssues') {
+      const selected = Array.from(options).filter((opt) => opt.selected).map((opt) => opt.value);
+      setForm((prev) => ({ ...prev, medicalIssues: selected }));
+      return;
+    }
+
+    setForm((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
   };
 
   const onSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setNotice('');
+
     try {
       const response = await fetch('/api/register', {
         method: 'POST',
@@ -62,8 +72,9 @@ function App() {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Registration failed');
+
       setNotice(`✅ ${data.message}. Welcome ${data.user.name}! Free slots left: ${data.freeAccess.remaining}`);
-      loadCapacity();
+      await loadCapacity();
     } catch (error) {
       setNotice(`❌ ${error.message}`);
     } finally {
@@ -109,14 +120,15 @@ function App() {
               <div className="field"><label>Water Goal (glasses)</label><input className="input" name="waterGoal" value={form.waterGoal} onChange={onChange} /></div>
               <div className="field full"><label>Office Timing / Work Type</label><input className="input" name="officeTiming" value={form.officeTiming} onChange={onChange} /></div>
               <div className="field full">
-                <label>Medical Issues</label>
-                <div className="muted" style={{fontSize:'13px'}}>
-                  <input type="checkbox" checked={form.medicalIssues.includes('diabetes')} onChange={() => toggleMedical('diabetes')} /> Diabetes &nbsp;
-                  <input type="checkbox" checked={form.medicalIssues.includes('high_bp')} onChange={() => toggleMedical('high_bp')} /> High BP &nbsp;
-                  <input type="checkbox" checked={form.medicalIssues.includes('kidney_stone')} onChange={() => toggleMedical('kidney_stone')} /> Kidney Stone
-                </div>
+                <label>Medical Issues (General list)</label>
+                <select className="input" name="medicalIssues" multiple value={form.medicalIssues} onChange={onChange} size="6">
+                  {medicalOptions.map((option) => (
+                    <option key={option} value={option}>{formatMedicalLabel(option)}</option>
+                  ))}
+                </select>
+                <div className="muted" style={{ fontSize: '12px', marginTop: '6px' }}>Hold Ctrl/Cmd to select multiple issues.</div>
               </div>
-              <div className="field full muted" style={{fontSize:'13px'}}>
+              <div className="field full muted" style={{ fontSize: '13px' }}>
                 <input type="checkbox" name="easyDietMode" checked={form.easyDietMode} onChange={onChange} /> Keep diet changes easy and gradual
               </div>
             </div>

@@ -9,10 +9,34 @@ import { getAiCoachReply } from './openaiService.js';
 
 const emotionalKeywords = ['guilty', 'ate too much', 'failed', 'binge', 'stress eating', 'sad', 'low', 'depressed'];
 
+const supportedMedicalIssues = [
+  'diabetes',
+  'high_bp',
+  'kidney_stone',
+  'thyroid',
+  'pcos',
+  'cholesterol',
+  'fatty_liver',
+  'acidity',
+  'ibs',
+  'anemia',
+  'asthma',
+  'arthritis'
+];
+
 const medicalKeywords = {
   diabetes: ['diabetes', 'diabetic', 'sugar patient'],
   high_bp: ['high bp', 'bp', 'hypertension', 'blood pressure'],
-  kidney_stone: ['kidney stone', 'stone problem', 'renal stone']
+  kidney_stone: ['kidney stone', 'stone problem', 'renal stone'],
+  thyroid: ['thyroid', 'hypothyroid', 'hyperthyroid'],
+  pcos: ['pcos', 'pcod'],
+  cholesterol: ['cholesterol', 'lipid'],
+  fatty_liver: ['fatty liver'],
+  acidity: ['acidity', 'acid reflux', 'gastric'],
+  ibs: ['ibs', 'irritable bowel'],
+  anemia: ['anemia', 'low hemoglobin', 'haemoglobin'],
+  asthma: ['asthma', 'breathing issue'],
+  arthritis: ['arthritis', 'joint pain']
 };
 
 function detectMealType(text) {
@@ -62,15 +86,40 @@ function getMedicalGuidance(user) {
   const lines = [];
 
   if (issues.includes('diabetes')) {
-    lines.push('🩺 Diabetes: choose low-GI foods (dal, roti, salads), avoid sugary drinks, walk 10-15 min after meals.');
+    lines.push('🩺 Diabetes: choose low-GI foods, avoid sugary drinks, and walk 10-15 min after meals.');
   }
-
   if (issues.includes('high_bp')) {
-    lines.push('🩺 High BP: reduce salt/packaged foods, prefer fruits, vegetables, and potassium-rich foods (banana, coconut water if suitable).');
+    lines.push('🩺 High BP: reduce salt/packaged foods and include vegetables, fruit, and hydration.');
   }
-
   if (issues.includes('kidney_stone')) {
-    lines.push('🩺 Kidney stone: hydrate consistently through the day, reduce excess salt, and avoid dehydration gaps.');
+    lines.push('🩺 Kidney stone: keep steady hydration and avoid long no-water gaps.');
+  }
+  if (issues.includes('thyroid')) {
+    lines.push('🩺 Thyroid: prioritize regular meal timing, protein, fiber, and sleep consistency.');
+  }
+  if (issues.includes('pcos')) {
+    lines.push('🩺 PCOS: prefer high-fiber + protein meals and reduce refined sugar/snacks.');
+  }
+  if (issues.includes('cholesterol')) {
+    lines.push('🩺 Cholesterol: use less fried food, include oats/legumes, and add daily walking.');
+  }
+  if (issues.includes('fatty_liver')) {
+    lines.push('🩺 Fatty liver: lower sugar and fried foods, favor whole foods and gradual fat loss.');
+  }
+  if (issues.includes('acidity')) {
+    lines.push('🩺 Acidity: avoid very spicy/late heavy meals and use lighter early dinners.');
+  }
+  if (issues.includes('ibs')) {
+    lines.push('🩺 IBS: keep trigger-food journal, prefer simple home-cooked meals, avoid sudden food changes.');
+  }
+  if (issues.includes('anemia')) {
+    lines.push('🩺 Anemia: include iron-rich foods (greens, legumes) with vitamin-C sources.');
+  }
+  if (issues.includes('asthma')) {
+    lines.push('🩺 Asthma: keep hydration up and avoid known food/environment triggers.');
+  }
+  if (issues.includes('arthritis')) {
+    lines.push('🩺 Arthritis: focus on anti-inflammatory meal pattern and low-impact daily activity.');
   }
 
   lines.push('For medical treatment changes, follow your doctor’s advice first.');
@@ -101,7 +150,7 @@ function onboardingPrompt() {
     'Please share in one message (comma-separated):',
     'Name, weight(kg), height(cm), goal(lose weight/stay fit/gain muscle),',
     'job type (desk/active), sleep hours, exercise habit (none/beginner/gym), daily budget(₹), water goal(glasses),',
-    'diet type(vegetarian/vegan/eggetarian/non_vegetarian), medical issues(optional: diabetes|high_bp|kidney_stone|none), office timing.'
+    `diet type(vegetarian/vegan/eggetarian/non_vegetarian), medical issues(optional: ${supportedMedicalIssues.join('|')}|none), office timing.`
   ].join('\n');
 }
 
@@ -109,19 +158,21 @@ async function saveMessage(userId, content, direction) {
   await Message.create({ userId, content, direction });
 }
 
+function normalizeMedicalValue(v) {
+  const value = v.trim().toLowerCase();
+  if (['high bp', 'bp', 'hypertension'].includes(value)) return 'high_bp';
+  if (['kidney stone', 'stone'].includes(value)) return 'kidney_stone';
+  if (['fatty liver'].includes(value)) return 'fatty_liver';
+  return value.replace(/\s+/g, '_');
+}
+
 function parseMedicalIssues(rawText = '') {
   if (!rawText || rawText.toLowerCase() === 'none') return [];
 
   return rawText
-    .split(/[|/]/)
-    .map((v) => v.trim().toLowerCase())
-    .map((v) => {
-      if (['diabetes', 'diabetic'].includes(v)) return 'diabetes';
-      if (['high_bp', 'high bp', 'bp', 'hypertension'].includes(v)) return 'high_bp';
-      if (['kidney_stone', 'kidney stone', 'stone'].includes(v)) return 'kidney_stone';
-      return null;
-    })
-    .filter(Boolean);
+    .split(/[|/,]/)
+    .map((v) => normalizeMedicalValue(v))
+    .filter((v) => supportedMedicalIssues.includes(v));
 }
 
 export async function handleIncoming(phone, text) {
@@ -183,12 +234,7 @@ export async function handleIncoming(phone, text) {
           ? 'Great. Focus on protein intake and proper recovery to avoid overtraining.'
           : 'Nice. Add squats, wall pushups, and stretching at home.';
 
-    const response = [
-      'Onboarding complete ✅',
-      exerciseLine,
-      `Diet coaching: ${getDietTypeHint(user)}`,
-      getMedicalGuidance(user)
-    ]
+    const response = ['Onboarding complete ✅', exerciseLine, `Diet coaching: ${getDietTypeHint(user)}`, getMedicalGuidance(user)]
       .filter(Boolean)
       .join('\n');
 
@@ -228,7 +274,7 @@ export async function handleIncoming(phone, text) {
   if (normalized.startsWith('medical') || normalized.startsWith('health issue')) {
     const issues = detectMedicalIssues(normalized);
     if (!issues.length) {
-      const response = 'Tell me issues like: medical diabetes high bp';
+      const response = `Tell me issues like: medical diabetes high bp thyroid pcos cholesterol. Supported: ${supportedMedicalIssues.join(', ')}`;
       await saveMessage(user._id, response, 'outgoing');
       return response;
     }
@@ -331,7 +377,7 @@ export async function handleIncoming(phone, text) {
     '- water 2',
     '- workout walk 20',
     '- diet type vegetarian',
-    '- medical diabetes high bp',
+    '- medical diabetes high bp thyroid',
     '- set reminder water 10:30',
     '- summary'
   ].join('\n');
