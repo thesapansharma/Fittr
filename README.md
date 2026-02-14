@@ -60,7 +60,8 @@ ADMIN_PANEL_TOKEN=fitbudget_admin
 ## Webhook Endpoints
 - `GET /webhook/whatsapp` verification (if WhatsApp mode)
 - `POST /webhook/whatsapp` incoming message handling
-- `POST /webhook/telegram` incoming Telegram updates
+- `POST /webhook/telegram` incoming Telegram updates (`message`, `edited_message`, `channel_post`, `callback_query`)
+- If `TELEGRAM_WEBHOOK_SECRET` is set, requests must include `x-telegram-bot-api-secret-token`.
 
 
 ## Admin Panel + Test Simulator
