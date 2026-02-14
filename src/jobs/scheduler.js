@@ -1,0 +1,72 @@
+import cron from 'node-cron';
+import dayjs from 'dayjs';
+import { listUsersForAutomation } from '../services/coachEngine.js';
+import { sendWhatsAppText } from '../services/whatsappService.js';
+
+async function sendToAllUsers(messageFactory) {
+  const users = await listUsersForAutomation();
+  await Promise.all(
+    users.map(async (user) => {
+      const msg = messageFactory(user);
+      await sendWhatsAppText(user.phone, msg);
+    })
+  );
+}
+
+async function sendCustomTimedReminders() {
+  const users = await listUsersForAutomation();
+  const now = dayjs();
+  const currentTime = now.format('HH:mm');
+  const todayKey = now.format('YYYY-MM-DD');
+
+  await Promise.all(
+    users.map(async (user) => {
+      const reminders = user.reminderTimes || {};
+      const lastSent = user.lastReminderSent || {};
+
+      const reminderConfigs = [
+        { key: 'water', text: '💧 Water reminder: drink water now and stay hydrated.' },
+        { key: 'meal', text: '🥗 Meal reminder: choose a balanced plate (protein + fiber + controlled carbs).' },
+        { key: 'workout', text: '🏃 Workout reminder: do your planned session or at least a 15-minute walk.' }
+      ];
+
+      let changed = false;
+
+      for (const reminder of reminderConfigs) {
+        if (reminders[reminder.key] === currentTime && lastSent[reminder.key] !== todayKey) {
+          await sendWhatsAppText(user.phone, reminder.text);
+          user.lastReminderSent = { ...lastSent, [reminder.key]: todayKey };
+          changed = true;
+        }
+      }
+
+      if (changed) {
+        await user.save();
+      }
+    })
+  );
+}
+
+export function startSchedulers() {
+  cron.schedule('0 8 * * *', () => {
+    sendToAllUsers(() => 'Good morning 🌞 Drink 1 glass of water and do a quick stretch.');
+  });
+
+  cron.schedule('0 14 * * *', () => {
+    sendToAllUsers((user) => `Hydration check 💧 You are targeting ${user.waterGoal} glasses today. Add a short walk too.`);
+  });
+
+  cron.schedule('30 20 * * *', () => {
+    sendToAllUsers(() => 'Evening tip: keep dinner light and finish 2-3 hours before sleep.');
+  });
+
+  cron.schedule('0 22 * * *', () => {
+    sendToAllUsers((user) => (user.sleepHours < 6 ? 'Sleep reminder 😴 Better sleep helps fat loss. Try winding down now.' : 'Sleep well 😴 Recovery is where progress happens.'));
+  });
+
+  cron.schedule('* * * * *', () => {
+    sendCustomTimedReminders().catch((error) => {
+      console.error('custom reminder scheduler failed', error.message);
+    });
+  });
+}
