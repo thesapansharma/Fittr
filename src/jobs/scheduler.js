@@ -47,6 +47,33 @@ async function sendCustomTimedReminders() {
   );
 }
 
+async function sendBiWeeklyFeedbackRequests() {
+  const users = await listUsersForAutomation();
+  const now = dayjs();
+
+  await Promise.all(
+    users.map(async (user) => {
+      const lastFeedbackAt = user.lastProductFeedbackAt ? dayjs(user.lastProductFeedbackAt) : null;
+      const shouldSend = !lastFeedbackAt || now.diff(lastFeedbackAt, 'day') >= 14;
+
+      if (!shouldSend) return;
+
+      const message = [
+        '📝 Quick 2-week check-in from FitBudget!',
+        'How is your coaching experience so far?',
+        'Please reply with:',
+        '1) Rating (1-5)',
+        '2) One thing you like',
+        '3) One thing we should improve'
+      ].join('\n');
+
+      await sendWhatsAppText(user.phone, message);
+      user.lastProductFeedbackAt = now.toDate();
+      await user.save();
+    })
+  );
+}
+
 export function startSchedulers() {
   cron.schedule('0 8 * * *', () => {
     sendToAllUsers(() => 'Good morning 🌞 Drink 1 glass of water and do a quick stretch.');
@@ -62,6 +89,12 @@ export function startSchedulers() {
 
   cron.schedule('0 22 * * *', () => {
     sendToAllUsers((user) => (user.sleepHours < 6 ? 'Sleep reminder 😴 Better sleep helps fat loss. Try winding down now.' : 'Sleep well 😴 Recovery is where progress happens.'));
+  });
+
+  cron.schedule('0 11 * * *', () => {
+    sendBiWeeklyFeedbackRequests().catch((error) => {
+      console.error('bi-weekly feedback scheduler failed', error.message);
+    });
   });
 
   cron.schedule('* * * * *', () => {

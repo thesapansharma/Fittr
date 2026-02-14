@@ -15,7 +15,7 @@ A low-cost WhatsApp AI health coach backend for:
 - MongoDB + Mongoose
 - WhatsApp Cloud API (cheap vs CPaaS intermediaries)
 - node-cron for background reminders
-- Optional OpenAI Responses API for free-form coaching replies
+- Optional OpenAI Responses API for free-form coaching replies with user context (country, gender, food preference, budget currency)
 - React-based modern registration UI (served from Express)
 
 ## Quick Start
@@ -40,6 +40,7 @@ WHATSAPP_GRAPH_VERSION=v21.0
 OPENAI_API_KEY=your_openai_api_key
 OPENAI_MODEL=gpt-4o-mini
 OPENAI_BASE_URL=https://api.openai.com/v1
+ADMIN_PANEL_TOKEN=fitbudget_admin
 ```
 
 
@@ -52,6 +53,17 @@ OPENAI_BASE_URL=https://api.openai.com/v1
 - `GET /webhook/whatsapp` verification
 - `POST /webhook/whatsapp` incoming message handling
 
+
+## Admin Panel + Test Simulator
+- Open `/admin` for an internal admin dashboard.
+- Use header token `x-admin-token` (or enter it in UI) matching `ADMIN_PANEL_TOKEN`.
+- Admin APIs:
+  - `GET /api/admin/overview` → totals for users, onboarding, logs.
+  - `GET /api/admin/users?limit=150` → user list.
+  - `GET /api/admin/messages?limit=200&phone=...` → recent logs (optionally phone filtered).
+  - `POST /api/admin/simulate` with `{ phone, text }` → run a local test message simulation and get bot reply.
+
+
 ## Message Inputs Supported
 - `meal lunch samosa 40`
 - `water 2`
@@ -61,6 +73,7 @@ OPENAI_BASE_URL=https://api.openai.com/v1
 - `set reminder water 10:30`
 - `summary`
 - emotional phrases like `I feel guilty` or `I feel sad`
+- product feedback reply like `feedback 5/5 love reminders, improve meal variety`
 
 ## New Personalized Health Features
 - **Diet type profiles**: vegetarian, vegan, eggetarian, non_vegetarian.
@@ -85,6 +98,7 @@ Cron schedules included for:
 - evening light-dinner reminder
 - night sleep reminder
 - custom-time reminders per user (water/meal/workout)
+- automatic bi-weekly WhatsApp product feedback check-in
 
 ## Notes
 If WhatsApp credentials are missing, outbound messages are printed in logs (mock mode) so local development stays simple.
@@ -110,14 +124,14 @@ git push --force-with-lease
 ## Registration API (First 200 Users Free)
 - `GET /api/register/capacity` → returns `{ limit, used, remaining }`.
 - `GET /api/register/medical-options` → returns supported medical issue list for dropdown UI.
-- `GET /api/register/office-timing-options` → returns selectable `officeStarts`, `officeEnds`, and `workTypes`.
+- `GET /api/register/office-timing-options` → returns selectable `officeStarts`, `officeEnds`, `workTypes`, plus dropdown options for `genders`, `countries`, `currencies`, and `foodPreferences`.
 - `POST /api/register/send-otp` → sends WhatsApp OTP for phone verification.
 - `POST /api/register/verify-otp` → verifies OTP and returns short-lived `verifyToken`.
 - `POST /api/register` → registers/updates profile (requires OTP verification token and legal consent) and enforces free access cap for new signups.
 
 ### Web UI
 - Open `/` to access the modern React registration page.
-- The page shows live seat usage and supports profile inputs with dropdowns for body-shape goal, water goal, current diet, daily budget range, office start/end time, and work type.
+- The page shows live seat usage and supports profile inputs with dropdowns for body-shape goal, water goal, current diet, food preference, office start/end time, work type, gender, country, budget currency, and daily budget range.
 - Medical issues are shown as tap-friendly selectable chips for quicker selection.
 - On submit, OTP verification appears in a popup modal if the phone is not yet verified.
 - Phone registration requires WhatsApp OTP verification before final submit.

@@ -79,6 +79,12 @@ function getDietTypeHint(user) {
   return dietMap[user.dietType] || 'Keep balanced plate: protein + fiber + controlled carbs.';
 }
 
+
+function getCurrencySymbol(currency) {
+  const symbols = { INR: '₹', USD: '$', GBP: '£', CAD: 'C$', AUD: 'A$', AED: 'AED ', SGD: 'S$' };
+  return symbols[currency] || '';
+}
+
 function getMedicalGuidance(user) {
   const issues = user.medicalIssues || [];
   if (!issues.length) return '';
@@ -252,6 +258,13 @@ export async function handleIncoming(phone, text) {
     return response;
   }
 
+
+  if (normalized.startsWith('feedback') || normalized.includes('improve this app') || normalized.includes('improvement suggestion')) {
+    const response = 'Thank you for sharing your feedback 🙏 We logged this and will use it to improve your coaching experience.';
+    await saveMessage(user._id, response, 'outgoing');
+    return response;
+  }
+
   if (normalized.startsWith('set reminder')) {
     const time = extractTime(normalized);
 
@@ -325,13 +338,14 @@ export async function handleIncoming(phone, text) {
   if (normalized.includes('summary')) {
     const stats = await getTodayStats(user._id);
     const remainingBudget = user.dailyBudget - stats.budgetUsed;
+    const currency = getCurrencySymbol(user.budgetCurrency);
     const response = [
       'Today Summary:',
       `Meals logged: ${stats.mealCount}`,
       `Water: ${stats.waterGlasses} glasses`,
       `Exercise: ${stats.exerciseMinutes} min`,
-      `Budget used: ₹${stats.budgetUsed}`,
-      `Budget left: ₹${remainingBudget}`,
+      `Budget used: ${currency}${stats.budgetUsed}`,
+      `Budget left: ${currency}${remainingBudget}`,
       `Diet type: ${user.dietType}`,
       `Medical focus: ${(user.medicalIssues || []).join(', ') || 'none'}`,
       'Great progress 👍'
@@ -351,10 +365,10 @@ export async function handleIncoming(phone, text) {
     const stats = await getTodayStats(user._id);
     const budgetWarning =
       stats.budgetUsed > user.dailyBudget
-        ? `⚠️ You crossed your daily budget by ₹${stats.budgetUsed - user.dailyBudget}.`
+        ? `⚠️ You crossed your daily budget by ${getCurrencySymbol(user.budgetCurrency)}${stats.budgetUsed - user.dailyBudget}.`
         : stats.budgetUsed > user.dailyBudget * 0.8
           ? '⚠️ You are nearing your daily budget limit.'
-          : `Budget status: ₹${user.dailyBudget - stats.budgetUsed} left today.`;
+          : `Budget status: ${getCurrencySymbol(user.budgetCurrency)}${user.dailyBudget - stats.budgetUsed} left today.`;
 
     const sleepTip = user.sleepHours < 6 ? 'Sleep below 6 hours can slow fat loss. Aim for better sleep timing tonight.' : 'Good sleep supports fat loss and recovery.';
     const base = `${food} (~${calories} cal) logged.`;

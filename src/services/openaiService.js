@@ -5,7 +5,7 @@ function buildSystemPrompt(user) {
   return [
     'You are FitBudget AI Coach for WhatsApp users in India.',
     'Give concise, practical, supportive guidance for nutrition, workouts, hydration, sleep, and budget-friendly food choices.',
-    'Respect user profile: goal, diet type, medical issues, office routine, and budget.',
+    'Respect user profile: goal, diet type, food preference, medical issues, office routine, country, and budget currency.',
     'Avoid diagnosis or medication advice; suggest seeing a doctor for clinical decisions.',
     'Keep response under 120 words and easy to act on today.'
   ].join(' ');
@@ -35,9 +35,14 @@ export async function getAiCoachReply(user, message) {
     jobType: user.jobType,
     officeTiming: user.officeTiming,
     dailyBudget: user.dailyBudget,
+    budgetCurrency: user.budgetCurrency,
+    country: user.country,
+    gender: user.gender,
     waterGoal: user.waterGoal,
     sleepHours: user.sleepHours,
-    exerciseHabit: user.exerciseHabit
+    exerciseHabit: user.exerciseHabit,
+    currentDiet: user.currentDiet,
+    foodPreference: user.foodPreference
   };
 
   try {

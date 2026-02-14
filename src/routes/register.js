@@ -12,6 +12,10 @@ const supportedMedicalIssues = ['diabetes', 'high_bp', 'kidney_stone', 'thyroid'
 const officeStartOptions = ['06:00', '07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '14:00', '16:00', '20:00', '22:00'];
 const officeEndOptions = ['14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00', '23:00', '06:00'];
 const workTypeOptions = ['desk', 'hybrid', 'active', 'shift'];
+const genderOptions = ['female', 'male', 'non_binary', 'prefer_not_to_say'];
+const countryOptions = ['India', 'United States', 'United Kingdom', 'Canada', 'Australia', 'UAE', 'Singapore'];
+const budgetCurrencies = ['INR', 'USD', 'GBP', 'CAD', 'AUD', 'AED', 'SGD'];
+const foodPreferenceOptions = ['home_cooked', 'quick_meals', 'high_protein', 'traditional', 'mixed'];
 
 const otpStore = new Map();
 const verifyStore = new Map();
@@ -42,7 +46,15 @@ registerRouter.get('/medical-options', (_req, res) => {
 });
 
 registerRouter.get('/office-timing-options', (_req, res) => {
-  return res.json({ officeStarts: officeStartOptions, officeEnds: officeEndOptions, workTypes: workTypeOptions });
+  return res.json({
+    officeStarts: officeStartOptions,
+    officeEnds: officeEndOptions,
+    workTypes: workTypeOptions,
+    genders: genderOptions,
+    countries: countryOptions,
+    currencies: budgetCurrencies,
+    foodPreferences: foodPreferenceOptions
+  });
 });
 
 registerRouter.get('/capacity', async (_req, res) => {
@@ -117,10 +129,14 @@ registerRouter.post('/', async (req, res) => {
       exerciseHabit,
       waterGoal,
       dailyBudget,
+      budgetCurrency,
+      country,
+      gender,
       dietType,
       medicalIssues,
       bodyShapeGoal,
       currentDiet,
+      foodPreference,
       easyDietMode,
       verifyToken,
       privacyAccepted,
@@ -143,6 +159,10 @@ registerRouter.post('/', async (req, res) => {
     }
 
     const selectedWorkType = workTypeOptions.includes(workType) ? workType : 'desk';
+    const selectedGender = genderOptions.includes(gender) ? gender : 'prefer_not_to_say';
+    const selectedCountry = countryOptions.includes(country) ? country : 'India';
+    const selectedCurrency = budgetCurrencies.includes(budgetCurrency) ? budgetCurrency : 'INR';
+    const selectedFoodPreference = foodPreferenceOptions.includes(foodPreference) ? foodPreference : '';
     const selectedOfficeStart = officeStartOptions.includes(officeStart) ? officeStart : '09:00';
     const selectedOfficeEnd = officeEndOptions.includes(officeEnd) ? officeEnd : '18:00';
     const officeTiming = `${selectedOfficeStart}-${selectedOfficeEnd}`;
@@ -176,10 +196,14 @@ registerRouter.post('/', async (req, res) => {
       exerciseHabit: exerciseHabit || 'none',
       waterGoal: Number(waterGoal) || 8,
       dailyBudget: Number(dailyBudget) || 250,
+      budgetCurrency: selectedCurrency,
+      country: selectedCountry,
+      gender: selectedGender,
       dietType,
       medicalIssues: nextMedicalIssues,
       bodyShapeGoal: bodyShapeGoal || goal,
       currentDiet,
+      foodPreference: selectedFoodPreference,
       easyDietMode: easyDietMode !== false,
       privacyAcceptedAt: new Date(),
       termsAcceptedAt: new Date(),
@@ -200,9 +224,13 @@ registerRouter.post('/', async (req, res) => {
         goal: user.goal,
         bodyShapeGoal: user.bodyShapeGoal,
         currentDiet: user.currentDiet,
+        foodPreference: user.foodPreference,
         dietType: user.dietType,
         medicalIssues: user.medicalIssues,
         dailyBudget: user.dailyBudget,
+        budgetCurrency: user.budgetCurrency,
+        country: user.country,
+        gender: user.gender,
         officeTiming: user.officeTiming,
         jobType: selectedWorkType,
         easyDietMode: user.easyDietMode

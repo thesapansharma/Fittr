@@ -16,5 +16,6 @@ export const config = {
     apiKey: process.env.OPENAI_API_KEY || '',
     model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
     baseUrl: process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1'
-  }
+  },
+  adminToken: process.env.ADMIN_PANEL_TOKEN || 'fitbudget_admin'
 };

@@ -26,8 +26,12 @@ const userSchema = new mongoose.Schema(
     exerciseHabit: { type: String, enum: ['none', 'beginner', 'gym'], default: 'none' },
     waterGoal: { type: Number, default: 8 },
     dailyBudget: { type: Number, default: 250 },
+    budgetCurrency: { type: String, default: 'INR' },
+    country: { type: String, default: 'India' },
+    gender: { type: String, enum: ['female', 'male', 'non_binary', 'prefer_not_to_say'], default: 'prefer_not_to_say' },
     bodyShapeGoal: String,
     currentDiet: String,
+    foodPreference: { type: String, default: '' },
     easyDietMode: { type: Boolean, default: true },
     dietType: {
       type: String,
@@ -49,6 +53,7 @@ const userSchema = new mongoose.Schema(
     privacyAcceptedAt: Date,
     termsAcceptedAt: Date,
     phoneVerifiedAt: Date,
+    lastProductFeedbackAt: Date,
     onboardingComplete: { type: Boolean, default: false },
     latestMoodFlag: { type: String, enum: ['neutral', 'guilty', 'stressed'], default: 'neutral' }
   },

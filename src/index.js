@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 import { config } from './config.js';
 import { webhookRouter } from './routes/webhook.js';
 import { registerRouter } from './routes/register.js';
+import { adminRouter } from './routes/admin.js';
 import { startSchedulers } from './jobs/scheduler.js';
 
 const app = express();
@@ -22,6 +23,12 @@ app.get('/health', (_req, res) => {
 
 app.use('/webhook/whatsapp', webhookRouter);
 app.use('/api/register', registerRouter);
+app.use('/api/admin', adminRouter);
+
+
+app.get('/admin', (_req, res) => {
+  return res.sendFile(path.join(publicDir, 'admin.html'));
+});
 
 app.get('*', (req, res, next) => {
   if (req.path.startsWith('/api/') || req.path.startsWith('/webhook/')) {
