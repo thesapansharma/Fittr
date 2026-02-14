@@ -41,7 +41,11 @@ app.get('*', (req, res, next) => {
 });
 
 async function start() {
-  await mongoose.connect(config.mongoUri);
+  await mongoose.connect(config.mongoUri,
+    {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+    });
   console.log('Connected to MongoDB');
 
   startSchedulers();

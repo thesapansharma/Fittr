@@ -3,21 +3,35 @@ import dayjs from 'dayjs';
 import { listUsersForAutomation } from '../services/coachEngine.js';
 import { sendMessage } from '../services/messagingService.js';
 
+const SCHEDULER_TIMEZONE = 'Asia/Kolkata';
+
+
+function getCurrentTimeInSchedulerTimezone() {
+  const nowInSchedulerTz = new Date(new Date().toLocaleString('en-US', { timeZone: SCHEDULER_TIMEZONE }));
+  const asDayJs = dayjs(nowInSchedulerTz);
+  return {
+    currentTime: asDayJs.format('HH:mm'),
+    todayKey: asDayJs.format('YYYY-MM-DD')
+  };
+}
+
 async function sendToAllUsers(messageFactory) {
   const users = await listUsersForAutomation();
   await Promise.all(
     users.map(async (user) => {
-      const msg = messageFactory(user);
-      await sendMessage(user.phone, msg);
+      try {
+        const msg = messageFactory(user);
+        await sendMessage(user.phone, msg);
+      } catch (error) {
+        console.error(`scheduler send failed for ${user.phone}`, error.message);
+      }
     })
   );
 }
 
 async function sendCustomTimedReminders() {
   const users = await listUsersForAutomation();
-  const now = dayjs();
-  const currentTime = now.format('HH:mm');
-  const todayKey = now.format('YYYY-MM-DD');
+  const { currentTime, todayKey } = getCurrentTimeInSchedulerTimezone();
 
   await Promise.all(
     users.map(async (user) => {
@@ -35,9 +49,13 @@ async function sendCustomTimedReminders() {
 
       for (const reminder of reminderConfigs) {
         if (reminders[reminder.key] === currentTime && lastSent[reminder.key] !== todayKey) {
-          await sendMessage(user.phone, reminder.text);
-          user.lastReminderSent = { ...lastSent, [reminder.key]: todayKey };
-          changed = true;
+          try {
+            await sendMessage(user.phone, reminder.text);
+            user.lastReminderSent = { ...lastSent, [reminder.key]: todayKey };
+            changed = true;
+          } catch (error) {
+            console.error(`custom reminder send failed for ${user.phone}`, error.message);
+          }
         }
       }
 
@@ -82,35 +100,31 @@ async function sendBiWeeklyFeedbackRequests() {
 export function startSchedulers() {
   cron.schedule('0 8 * * *', () => {
     sendToAllUsers(() => 'Good morning 🌞 Drink 1 glass of water and do a quick stretch.');
-  });
+  }, { timezone: SCHEDULER_TIMEZONE });
 
   cron.schedule('0 14 * * *', () => {
     sendToAllUsers((user) => `Hydration check 💧 You are targeting ${user.waterGoal} glasses today. Add a short walk too.`);
-  });
+  }, { timezone: SCHEDULER_TIMEZONE });
 
   cron.schedule('30 20 * * *', () => {
     sendToAllUsers(() => 'Evening tip: keep dinner light and finish 2-3 hours before sleep.');
-  });
-
-  cron.schedule('0 22 * * *', () => {
-    sendToAllUsers((user) => (user.sleepHours < 6 ? 'Sleep reminder 😴 Better sleep helps fat loss. Try winding down now.' : 'Sleep well 😴 Recovery is where progress happens.'));
-  });
+  }, { timezone: SCHEDULER_TIMEZONE });
 
   cron.schedule('0 19 * * *', () => {
     sendDailyCoachCheckIn().catch((error) => {
       console.error('daily check-in scheduler failed', error.message);
     });
-  });
+  }, { timezone: SCHEDULER_TIMEZONE });
 
   cron.schedule('0 11 * * *', () => {
     sendBiWeeklyFeedbackRequests().catch((error) => {
       console.error('bi-weekly feedback scheduler failed', error.message);
     });
-  });
+  }, { timezone: SCHEDULER_TIMEZONE });
 
   cron.schedule('* * * * *', () => {
     sendCustomTimedReminders().catch((error) => {
       console.error('custom reminder scheduler failed', error.message);
     });
-  });
+  }, { timezone: SCHEDULER_TIMEZONE });
 }

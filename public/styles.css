@@ -48,3 +48,28 @@ label { font-size: 12px; color: var(--muted); margin-bottom: 6px; display: block
   .hero { grid-template-columns: 1fr; }
   .otp-row { grid-template-columns: 1fr; }
 }
+
+.admin-wrap { display: grid; gap: 16px; }
+.admin-top { padding: 22px; display: grid; grid-template-columns: 1.2fr 1fr; gap: 16px; align-items: end; }
+.admin-title { font-size: clamp(28px, 4vw, 40px); margin: 10px 0 6px; }
+.admin-token { margin: 0; }
+.admin-btn-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.admin-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.metric-card { padding: 14px; border-radius: 16px; }
+.metric-label { color: var(--muted); font-size: 12px; }
+.metric-value { font-size: 30px; font-weight: 800; margin-top: 4px; }
+.admin-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.admin-card { padding: 18px; }
+.admin-card-head { display: flex; justify-content: space-between; gap: 12px; align-items: start; margin-bottom: 10px; }
+.admin-card-head h3 { margin: 0 0 6px; }
+.admin-actions { min-width: 230px; }
+.admin-list { display: grid; gap: 8px; max-height: 340px; overflow: auto; padding-right: 4px; }
+.mini-card { border: 1px solid var(--line); border-radius: 12px; background: rgba(255,255,255,.04); padding: 10px; }
+.mini-title { font-weight: 700; margin-bottom: 6px; }
+.mini-line { font-size: 13px; line-height: 1.4; word-break: break-word; }
+.admin-pre { white-space: pre-wrap; }
+
+@media (max-width: 960px) {
+  .admin-top, .admin-grid, .admin-metrics, .admin-btn-row { grid-template-columns: 1fr; }
+  .admin-actions { min-width: 0; width: 100%; }
+}
