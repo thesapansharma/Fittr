@@ -26,6 +26,9 @@ const userSchema = new mongoose.Schema(
     exerciseHabit: { type: String, enum: ['none', 'beginner', 'gym'], default: 'none' },
     waterGoal: { type: Number, default: 8 },
     dailyBudget: { type: Number, default: 250 },
+    bodyShapeGoal: String,
+    currentDiet: String,
+    easyDietMode: { type: Boolean, default: true },
     dietType: {
       type: String,
       enum: ['vegetarian', 'vegan', 'eggetarian', 'non_vegetarian'],

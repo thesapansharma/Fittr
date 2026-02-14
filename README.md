@@ -16,6 +16,7 @@ A low-cost WhatsApp AI health coach backend for:
 - WhatsApp Cloud API (cheap vs CPaaS intermediaries)
 - node-cron for background reminders
 - Optional OpenAI Responses API for free-form coaching replies
+- React-based modern registration UI (served from Express)
 
 ## Quick Start
 
@@ -104,3 +105,12 @@ If your branch is already pushed, update remote branch after rebase:
 ```bash
 git push --force-with-lease
 ```
+
+
+## Registration API (First 200 Users Free)
+- `GET /api/register/capacity` → returns `{ limit, used, remaining }`.
+- `POST /api/register` → registers/updates a user profile and enforces free access cap for new signups.
+
+### Web UI
+- Open `/` to access the modern React registration page.
+- The page shows live seat usage and supports profile inputs (goal, body-shape target, diet type, medical issues, office timing, and budget).

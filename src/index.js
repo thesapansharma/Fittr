@@ -1,17 +1,35 @@
 import express from 'express';
 import mongoose from 'mongoose';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { config } from './config.js';
 import { webhookRouter } from './routes/webhook.js';
+import { registerRouter } from './routes/register.js';
 import { startSchedulers } from './jobs/scheduler.js';
 
 const app = express();
 app.use(express.json());
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const publicDir = path.join(__dirname, '..', 'public');
+
+app.use(express.static(publicDir));
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', service: 'fitbudget-ai-coach' });
 });
 
 app.use('/webhook/whatsapp', webhookRouter);
+app.use('/api/register', registerRouter);
+
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api/') || req.path.startsWith('/webhook/')) {
+    return next();
+  }
+
+  return res.sendFile(path.join(publicDir, 'index.html'));
+});
 
 async function start() {
   await mongoose.connect(config.mongoUri);
