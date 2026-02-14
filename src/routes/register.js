@@ -9,7 +9,9 @@ const FREE_ACCESS_LIMIT = 200;
 const OTP_TTL_MS = 10 * 60 * 1000;
 const VERIFY_TTL_MS = 15 * 60 * 1000;
 const supportedMedicalIssues = ['diabetes', 'high_bp', 'kidney_stone', 'thyroid', 'pcos', 'cholesterol', 'fatty_liver', 'acidity', 'ibs', 'anemia', 'asthma', 'arthritis'];
-const officeTimingOptions = ['6am-2pm shift', '9am-6pm desk', '10am-7pm desk', '2pm-10pm shift', 'night shift', 'freelance flexible', 'field active work'];
+const officeStartOptions = ['06:00', '07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '14:00', '16:00', '20:00', '22:00'];
+const officeEndOptions = ['14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00', '23:00', '06:00'];
+const workTypeOptions = ['desk', 'hybrid', 'active', 'shift'];
 
 const otpStore = new Map();
 const verifyStore = new Map();
@@ -40,7 +42,7 @@ registerRouter.get('/medical-options', (_req, res) => {
 });
 
 registerRouter.get('/office-timing-options', (_req, res) => {
-  return res.json({ officeTimings: officeTimingOptions });
+  return res.json({ officeStarts: officeStartOptions, officeEnds: officeEndOptions, workTypes: workTypeOptions });
 });
 
 registerRouter.get('/capacity', async (_req, res) => {
@@ -108,7 +110,9 @@ registerRouter.post('/', async (req, res) => {
       weight,
       height,
       goal,
-      officeTiming,
+      officeStart,
+      officeEnd,
+      workType,
       sleepHours,
       exerciseHabit,
       waterGoal,
@@ -138,7 +142,10 @@ registerRouter.post('/', async (req, res) => {
       return res.status(400).json({ error: 'Phone verification required. Verify OTP before registering.' });
     }
 
-    const office = officeTimingOptions.includes(officeTiming) ? officeTiming : '9am-6pm desk';
+    const selectedWorkType = workTypeOptions.includes(workType) ? workType : 'desk';
+    const selectedOfficeStart = officeStartOptions.includes(officeStart) ? officeStart : '09:00';
+    const selectedOfficeEnd = officeEndOptions.includes(officeEnd) ? officeEnd : '18:00';
+    const officeTiming = `${selectedOfficeStart}-${selectedOfficeEnd}`;
 
     const existing = await User.findOne({ phone: normalizedPhone });
     if (!existing) {
@@ -163,8 +170,8 @@ registerRouter.post('/', async (req, res) => {
       weight: Number(weight) || undefined,
       height: Number(height) || undefined,
       goal,
-      officeTiming: office,
-      jobType: office.toLowerCase().includes('active') || office.toLowerCase().includes('field') ? 'active' : 'desk',
+      officeTiming,
+      jobType: selectedWorkType === 'active' ? 'active' : 'desk',
       sleepHours: Number(sleepHours) || 7,
       exerciseHabit: exerciseHabit || 'none',
       waterGoal: Number(waterGoal) || 8,
@@ -197,6 +204,7 @@ registerRouter.post('/', async (req, res) => {
         medicalIssues: user.medicalIssues,
         dailyBudget: user.dailyBudget,
         officeTiming: user.officeTiming,
+        jobType: selectedWorkType,
         easyDietMode: user.easyDietMode
       }
     });
