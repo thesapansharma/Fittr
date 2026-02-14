@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import express from 'express';
 import { User } from '../models/User.js';
+import { config } from '../config.js';
 import { sendMessage, isOtpRequired } from '../services/messagingService.js';
 
 export const registerRouter = express.Router();
@@ -55,7 +56,7 @@ registerRouter.get('/office-timing-options', (_req, res) => {
 });
 
 registerRouter.get('/channel', (_req, res) => {
-  return res.json({ provider: process.env.COMMUNICATION_PROVIDER || 'telegram', otpRequired: isOtpRequired() });
+  return res.json({ provider: config.communicationProvider, otpRequired: isOtpRequired() });
 });
 
 registerRouter.get('/capacity', async (_req, res) => {

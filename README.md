@@ -141,7 +141,7 @@ git push --force-with-lease
 - `GET /api/register/capacity` → returns `{ limit, used, remaining }`.
 - `GET /api/register/medical-options` → returns supported medical issue list for dropdown UI.
 - `GET /api/register/office-timing-options` → returns selectable `officeStarts`, `officeEnds`, `workTypes`, plus dropdown options for `genders` and `foodPreferences` (country removed; currency fixed to INR for India).
-- `POST /api/register/send-otp` → sends WhatsApp OTP for phone verification.
+- `POST /api/register/send-otp` → sends OTP on the active provider channel for phone verification (required in WhatsApp mode).
 - `POST /api/register/verify-otp` → verifies OTP and returns short-lived `verifyToken`.
 - `POST /api/register` → registers/updates profile (requires OTP verification token and legal consent) and enforces free access cap for new signups.
 
@@ -150,5 +150,5 @@ git push --force-with-lease
 - The page shows live seat usage and supports profile inputs with dropdowns for body-shape goal, water goal, current diet, food preference, office start/end time, work type, gender, and daily budget range (country fixed to India; currency fixed to INR).
 - Medical issues are shown as tap-friendly selectable chips for quicker selection.
 - On submit, OTP verification appears in a popup modal if the phone is not yet verified.
-- Phone registration requires WhatsApp OTP verification before final submit.
+- Phone registration requires OTP verification only when provider is WhatsApp; Telegram mode shows Telegram-specific UI text and skips OTP.
 - Privacy Policy and Terms & Conditions consent are required before registration.
