@@ -1,4 +1,19 @@
-const { useState } = React;
+const { useMemo, useState } = React;
+
+function SectionCard({ title, subtitle, actions, children }) {
+  return (
+    <section className="admin-card glass float-card">
+      <div className="admin-card-head">
+        <div>
+          <h3>{title}</h3>
+          {subtitle && <p className="muted">{subtitle}</p>}
+        </div>
+        {actions && <div className="admin-actions">{actions}</div>}
+      </div>
+      {children}
+    </section>
+  );
+}
 
 function App() {
   const [token, setToken] = useState('');
@@ -10,50 +25,63 @@ function App() {
   const [simText, setSimText] = useState('');
   const [simOutput, setSimOutput] = useState('');
   const [notice, setNotice] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  const hasToken = token.trim().length > 0;
 
   const authedFetch = async (url, options = {}) => {
-    const headers = { ...(options.headers || {}), 'x-admin-token': token };
+    const headers = { ...(options.headers || {}), 'x-admin-token': token.trim() };
     const response = await fetch(url, { ...options, headers });
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || 'Request failed');
     return data;
   };
 
-  const loadOverview = async () => {
+  const withLoader = async (fn) => {
+    if (!hasToken) {
+      setNotice('❌ Enter admin token first.');
+      return;
+    }
+
+    setBusy(true);
     try {
-      const data = await authedFetch('/api/admin/overview');
-      setOverview(data);
-      setNotice('✅ Overview loaded');
+      await fn();
     } catch (error) {
       setNotice(`❌ ${error.message}`);
+    } finally {
+      setBusy(false);
     }
   };
 
-  const loadUsers = async () => {
-    try {
-      const data = await authedFetch('/api/admin/users?limit=150');
-      setUsers(data.users || []);
-      setNotice('✅ Users loaded');
-    } catch (error) {
-      setNotice(`❌ ${error.message}`);
-    }
-  };
+  const loadOverview = () => withLoader(async () => {
+    const data = await authedFetch('/api/admin/overview');
+    setOverview(data);
+    setNotice('✅ Overview loaded');
+  });
 
-  const loadMessages = async () => {
-    try {
-      const params = new URLSearchParams({ limit: '200' });
-      if (phoneFilter) params.set('phone', phoneFilter);
-      const data = await authedFetch(`/api/admin/messages?${params.toString()}`);
-      setMessages(data.messages || []);
-      setNotice('✅ Messages loaded');
-    } catch (error) {
-      setNotice(`❌ ${error.message}`);
-    }
-  };
+  const loadUsers = () => withLoader(async () => {
+    const data = await authedFetch('/api/admin/users?limit=150');
+    setUsers(data.users || []);
+    setNotice(`✅ Users loaded (${(data.users || []).length})`);
+  });
+
+  const loadMessages = () => withLoader(async () => {
+    const params = new URLSearchParams({ limit: '200' });
+    if (phoneFilter) params.set('phone', phoneFilter);
+    const data = await authedFetch(`/api/admin/messages?${params.toString()}`);
+    setMessages(data.messages || []);
+    setNotice(`✅ Messages loaded (${(data.messages || []).length})`);
+  });
 
   const runSimulator = async (e) => {
     e.preventDefault();
-    try {
+
+    if (!simPhone.trim() || !simText.trim()) {
+      setNotice('❌ Enter simulator phone and message.');
+      return;
+    }
+
+    await withLoader(async () => {
       const data = await authedFetch('/api/admin/simulate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -61,50 +89,105 @@ function App() {
       });
       setSimOutput(`Incoming: ${data.incoming}\nReply: ${data.reply}`);
       setNotice('✅ Test simulation sent');
-    } catch (error) {
-      setNotice(`❌ ${error.message}`);
-    }
+    });
   };
+
+  const metricCards = useMemo(() => {
+    if (!overview) return [];
+    return [
+      { label: 'Total Users', value: overview.totalUsers ?? 0 },
+      { label: 'Onboarded Users', value: overview.onboardedUsers ?? 0 },
+      { label: 'Total Meals', value: overview.totalMeals ?? 0 },
+      { label: 'Messages Logged', value: overview.totalMessages ?? 0 }
+    ];
+  }, [overview]);
 
   return (
     <div className="page">
-      <div className="hero">
-        <section className="glass form-card" style={{ width: '100%' }}>
-          <h2>Admin Panel</h2>
-          <p className="muted">View user list, logs, and run test message simulation.</p>
-
-          <div className="grid">
-            <div className="field full">
-              <label>Admin Token</label>
-              <input className="input" value={token} onChange={(e) => setToken(e.target.value)} placeholder="Enter ADMIN_PANEL_TOKEN" />
-            </div>
+      <div className="admin-wrap">
+        <section className="admin-top glass">
+          <div>
+            <span className="badge">FITBUDGET ADMIN</span>
+            <h1 className="admin-title">Control Center</h1>
+            <p className="muted">Monitor users, track logs, and test bot replies from one place.</p>
           </div>
-
-          <div className="otp-row" style={{ marginBottom: 16 }}>
-            <button type="button" className="btn ghost" onClick={loadOverview}>Load Overview</button>
-            <button type="button" className="btn ghost" onClick={loadUsers}>Load Users</button>
-            <button type="button" className="btn ghost" onClick={loadMessages}>Load Messages</button>
+          <div className="field admin-token">
+            <label>Admin Token</label>
+            <input
+              className="input"
+              value={token}
+              onChange={(e) => setToken(e.target.value)}
+              placeholder="Enter ADMIN_PANEL_TOKEN"
+            />
           </div>
+        </section>
 
-          {overview && (
-            <pre className="notice">{JSON.stringify(overview, null, 2)}</pre>
-          )}
+        <div className="admin-btn-row">
+          <button type="button" className="btn ghost" onClick={loadOverview} disabled={busy}>Load Overview</button>
+          <button type="button" className="btn ghost" onClick={loadUsers} disabled={busy}>Load Users</button>
+          <button type="button" className="btn ghost" onClick={loadMessages} disabled={busy}>Load Messages</button>
+        </div>
 
-          <h3>User List</h3>
-          <pre className="notice" style={{ maxHeight: 220, overflow: 'auto' }}>
-            {JSON.stringify(users, null, 2)}
-          </pre>
+        {notice && <div className="notice">{notice}</div>}
 
-          <h3>Message Logs</h3>
-          <div className="field full">
-            <label>Filter by Phone (optional)</label>
-            <input className="input" value={phoneFilter} onChange={(e) => setPhoneFilter(e.target.value)} placeholder="9198xxxxxx" />
+        {metricCards.length > 0 && (
+          <div className="admin-metrics">
+            {metricCards.map((m) => (
+              <div key={m.label} className="metric-card glass">
+                <div className="metric-label">{m.label}</div>
+                <div className="metric-value">{m.value}</div>
+              </div>
+            ))}
           </div>
-          <pre className="notice" style={{ maxHeight: 220, overflow: 'auto' }}>
-            {JSON.stringify(messages, null, 2)}
-          </pre>
+        )}
 
-          <h3>Test Message Simulator</h3>
+        <div className="admin-grid">
+          <SectionCard title="User List" subtitle="Latest users with profile summary">
+            {users.length === 0 ? (
+              <p className="muted">No users loaded yet.</p>
+            ) : (
+              <div className="admin-list">
+                {users.map((user) => (
+                  <article className="mini-card" key={user._id || user.phone}>
+                    <div className="mini-title">{user.name || 'Unnamed user'}</div>
+                    <div className="mini-line">📞 {user.phone || 'NA'}</div>
+                    <div className="mini-line">🎯 {user.goal || 'NA'} • {user.dietType || 'NA'}</div>
+                    <div className="mini-line">💧 {user.waterGoal || 0} • ₹{user.dailyBudget || 0}</div>
+                  </article>
+                ))}
+              </div>
+            )}
+          </SectionCard>
+
+          <SectionCard
+            title="Message Logs"
+            subtitle="Recent incoming/outgoing messages"
+            actions={(
+              <input
+                className="input"
+                value={phoneFilter}
+                onChange={(e) => setPhoneFilter(e.target.value)}
+                placeholder="Filter by phone"
+              />
+            )}
+          >
+            {messages.length === 0 ? (
+              <p className="muted">No messages loaded yet.</p>
+            ) : (
+              <div className="admin-list">
+                {messages.map((msg) => (
+                  <article className="mini-card" key={msg._id || `${msg.userId}-${msg.timestamp}`}>
+                    <div className="mini-title">{msg.direction === 'outgoing' ? '🤖 Bot' : '👤 User'}</div>
+                    <div className="mini-line">{msg.content}</div>
+                    <div className="mini-line muted">{msg.timestamp ? new Date(msg.timestamp).toLocaleString() : ''}</div>
+                  </article>
+                ))}
+              </div>
+            )}
+          </SectionCard>
+        </div>
+
+        <SectionCard title="Test Message Simulator" subtitle="Send test input and inspect coach reply">
           <form onSubmit={runSimulator}>
             <div className="grid">
               <div className="field">
@@ -116,12 +199,10 @@ function App() {
                 <input className="input" value={simText} onChange={(e) => setSimText(e.target.value)} required />
               </div>
             </div>
-            <button className="btn" type="submit">Run Simulation</button>
+            <button className="btn" type="submit" disabled={busy}>Run Simulation</button>
           </form>
-
-          {simOutput && <pre className="notice">{simOutput}</pre>}
-          {notice && <div className="notice">{notice}</div>}
-        </section>
+          {simOutput && <pre className="notice admin-pre">{simOutput}</pre>}
+        </SectionCard>
       </div>
     </div>
   );
