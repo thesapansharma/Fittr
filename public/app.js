@@ -11,7 +11,7 @@ function formatOptionLabel(value) {
 function App() {
   const [capacity, setCapacity] = useState({ limit: 200, used: 0, remaining: 200 });
   const [medicalOptions, setMedicalOptions] = useState([]);
-  const [officeOptions, setOfficeOptions] = useState({ officeStarts: [], officeEnds: [], workTypes: [], genders: [], countries: [], currencies: [], foodPreferences: [] });
+  const [officeOptions, setOfficeOptions] = useState({ officeStarts: [], officeEnds: [], workTypes: [], genders: [], foodPreferences: [] });
   const [loading, setLoading] = useState(false);
   const [notice, setNotice] = useState('');
   const [otpStatus, setOtpStatus] = useState('');
@@ -35,7 +35,6 @@ function App() {
     waterGoal: '8',
     dailyBudget: '250',
     budgetCurrency: 'INR',
-    country: 'India',
     gender: 'prefer_not_to_say',
     dietType: 'vegetarian',
     currentDiet: 'home cooked mixed meals',
@@ -68,8 +67,6 @@ function App() {
       officeEnds: officeData.officeEnds || [],
       workTypes: officeData.workTypes || [],
       genders: officeData.genders || [],
-      countries: officeData.countries || [],
-      currencies: officeData.currencies || [],
       foodPreferences: officeData.foodPreferences || []
     });
 
@@ -79,8 +76,7 @@ function App() {
       officeEnd: (officeData.officeEnds || []).includes(prev.officeEnd) ? prev.officeEnd : (officeData.officeEnds || ['18:00'])[0],
       workType: (officeData.workTypes || []).includes(prev.workType) ? prev.workType : (officeData.workTypes || ['desk'])[0],
       gender: (officeData.genders || []).includes(prev.gender) ? prev.gender : (officeData.genders || ['prefer_not_to_say'])[0],
-      country: (officeData.countries || []).includes(prev.country) ? prev.country : (officeData.countries || ['India'])[0],
-      budgetCurrency: (officeData.currencies || []).includes(prev.budgetCurrency) ? prev.budgetCurrency : (officeData.currencies || ['INR'])[0],
+      budgetCurrency: 'INR',
       foodPreference: (officeData.foodPreferences || []).includes(prev.foodPreference) ? prev.foodPreference : (officeData.foodPreferences || ['home_cooked'])[0]
     }));
   };
@@ -214,12 +210,11 @@ function App() {
               <div className="field"><label>Current Diet</label><select name="currentDiet" value={form.currentDiet} onChange={onChange}><option>home cooked mixed meals</option><option>mostly vegetarian home food</option><option>frequent outside food</option><option>high carb traditional meals</option><option>irregular meal timing</option></select></div>
               <div className="field"><label>Food Preference</label><select name="foodPreference" value={form.foodPreference} onChange={onChange}>{officeOptions.foodPreferences.map((v) => <option key={v} value={v}>{formatOptionLabel(v)}</option>)}</select></div>
               <div className="field"><label>Gender</label><select name="gender" value={form.gender} onChange={onChange}>{officeOptions.genders.map((v) => <option key={v} value={v}>{formatOptionLabel(v)}</option>)}</select></div>
-              <div className="field"><label>Country</label><select name="country" value={form.country} onChange={onChange}>{officeOptions.countries.map((v) => <option key={v} value={v}>{v}</option>)}</select></div>
 
               <div className="field"><label>Work Type</label><select name="workType" value={form.workType} onChange={onChange}>{officeOptions.workTypes.map((v) => <option key={v} value={v}>{v}</option>)}</select></div>
               <div className="field"><label>Office Start</label><select name="officeStart" value={form.officeStart} onChange={onChange}>{officeOptions.officeStarts.map((v) => <option key={v} value={v}>{v}</option>)}</select></div>
               <div className="field"><label>Office End</label><select name="officeEnd" value={form.officeEnd} onChange={onChange}>{officeOptions.officeEnds.map((v) => <option key={v} value={v}>{v}</option>)}</select></div>
-              <div className="field"><label>Budget Currency</label><select name="budgetCurrency" value={form.budgetCurrency} onChange={onChange}>{officeOptions.currencies.map((v) => <option key={v} value={v}>{v}</option>)}</select></div>
+              <div className="field"><label>Budget Currency</label><input className="input" value="INR (India)" disabled /></div>
               <div className="field"><label>Daily Budget</label><select name="dailyBudget" value={form.dailyBudget} onChange={onChange}><option value="150">150-200</option><option value="250">200-300</option><option value="350">300-400</option><option value="500">400+</option></select></div>
 
               <div className="field"><label>Water Goal (glasses)</label><select name="waterGoal" value={form.waterGoal} onChange={onChange}><option>6</option><option>8</option><option>10</option><option>12</option></select></div>

@@ -15,8 +15,12 @@ A low-cost WhatsApp AI health coach backend for:
 - MongoDB + Mongoose
 - WhatsApp Cloud API (cheap vs CPaaS intermediaries)
 - node-cron for background reminders
-- Optional OpenAI Responses API for free-form coaching replies with user context (country, gender, food preference, budget currency)
+- Optional OpenAI Responses API for free-form coaching replies with user context (India/INR, gender, food preference)
 - React-based modern registration UI (served from Express)
+
+## Documentation
+- Technical documentation: `docs/TECHNICAL.md`
+- User documentation: `docs/USER_GUIDE.md`
 
 ## Quick Start
 
@@ -41,6 +45,7 @@ OPENAI_API_KEY=your_openai_api_key
 OPENAI_MODEL=gpt-4o-mini
 OPENAI_BASE_URL=https://api.openai.com/v1
 ADMIN_PANEL_TOKEN=fitbudget_admin
+# Country is fixed to India and budget currency is INR
 ```
 
 
@@ -96,7 +101,8 @@ Cron schedules included for:
 - morning activation
 - afternoon hydration nudge
 - evening light-dinner reminder
-- night sleep reminder
+- nightly sleep reminder
+- daily automated check-in message for all onboarded users
 - custom-time reminders per user (water/meal/workout)
 - automatic bi-weekly WhatsApp product feedback check-in
 
@@ -124,14 +130,14 @@ git push --force-with-lease
 ## Registration API (First 200 Users Free)
 - `GET /api/register/capacity` → returns `{ limit, used, remaining }`.
 - `GET /api/register/medical-options` → returns supported medical issue list for dropdown UI.
-- `GET /api/register/office-timing-options` → returns selectable `officeStarts`, `officeEnds`, `workTypes`, plus dropdown options for `genders`, `countries`, `currencies`, and `foodPreferences`.
+- `GET /api/register/office-timing-options` → returns selectable `officeStarts`, `officeEnds`, `workTypes`, plus dropdown options for `genders` and `foodPreferences` (country removed; currency fixed to INR for India).
 - `POST /api/register/send-otp` → sends WhatsApp OTP for phone verification.
 - `POST /api/register/verify-otp` → verifies OTP and returns short-lived `verifyToken`.
 - `POST /api/register` → registers/updates profile (requires OTP verification token and legal consent) and enforces free access cap for new signups.
 
 ### Web UI
 - Open `/` to access the modern React registration page.
-- The page shows live seat usage and supports profile inputs with dropdowns for body-shape goal, water goal, current diet, food preference, office start/end time, work type, gender, country, budget currency, and daily budget range.
+- The page shows live seat usage and supports profile inputs with dropdowns for body-shape goal, water goal, current diet, food preference, office start/end time, work type, gender, and daily budget range (country fixed to India; currency fixed to INR).
 - Medical issues are shown as tap-friendly selectable chips for quicker selection.
 - On submit, OTP verification appears in a popup modal if the phone is not yet verified.
 - Phone registration requires WhatsApp OTP verification before final submit.

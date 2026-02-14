@@ -13,8 +13,7 @@ const officeStartOptions = ['06:00', '07:00', '08:00', '09:00', '10:00', '11:00'
 const officeEndOptions = ['14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00', '23:00', '06:00'];
 const workTypeOptions = ['desk', 'hybrid', 'active', 'shift'];
 const genderOptions = ['female', 'male', 'non_binary', 'prefer_not_to_say'];
-const countryOptions = ['India', 'United States', 'United Kingdom', 'Canada', 'Australia', 'UAE', 'Singapore'];
-const budgetCurrencies = ['INR', 'USD', 'GBP', 'CAD', 'AUD', 'AED', 'SGD'];
+const budgetCurrencies = ['INR'];
 const foodPreferenceOptions = ['home_cooked', 'quick_meals', 'high_protein', 'traditional', 'mixed'];
 
 const otpStore = new Map();
@@ -51,8 +50,6 @@ registerRouter.get('/office-timing-options', (_req, res) => {
     officeEnds: officeEndOptions,
     workTypes: workTypeOptions,
     genders: genderOptions,
-    countries: countryOptions,
-    currencies: budgetCurrencies,
     foodPreferences: foodPreferenceOptions
   });
 });
@@ -130,7 +127,6 @@ registerRouter.post('/', async (req, res) => {
       waterGoal,
       dailyBudget,
       budgetCurrency,
-      country,
       gender,
       dietType,
       medicalIssues,
@@ -160,7 +156,6 @@ registerRouter.post('/', async (req, res) => {
 
     const selectedWorkType = workTypeOptions.includes(workType) ? workType : 'desk';
     const selectedGender = genderOptions.includes(gender) ? gender : 'prefer_not_to_say';
-    const selectedCountry = countryOptions.includes(country) ? country : 'India';
     const selectedCurrency = budgetCurrencies.includes(budgetCurrency) ? budgetCurrency : 'INR';
     const selectedFoodPreference = foodPreferenceOptions.includes(foodPreference) ? foodPreference : '';
     const selectedOfficeStart = officeStartOptions.includes(officeStart) ? officeStart : '09:00';
@@ -197,7 +192,6 @@ registerRouter.post('/', async (req, res) => {
       waterGoal: Number(waterGoal) || 8,
       dailyBudget: Number(dailyBudget) || 250,
       budgetCurrency: selectedCurrency,
-      country: selectedCountry,
       gender: selectedGender,
       dietType,
       medicalIssues: nextMedicalIssues,
@@ -229,7 +223,6 @@ registerRouter.post('/', async (req, res) => {
         medicalIssues: user.medicalIssues,
         dailyBudget: user.dailyBudget,
         budgetCurrency: user.budgetCurrency,
-        country: user.country,
         gender: user.gender,
         officeTiming: user.officeTiming,
         jobType: selectedWorkType,

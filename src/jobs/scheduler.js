@@ -47,6 +47,10 @@ async function sendCustomTimedReminders() {
   );
 }
 
+async function sendDailyCoachCheckIn() {
+  await sendToAllUsers((user) => `📘 Daily check-in: log meals, water, and workout today. Budget target: ₹${user.dailyBudget}. Reply 'summary' tonight for progress.`);
+}
+
 async function sendBiWeeklyFeedbackRequests() {
   const users = await listUsersForAutomation();
   const now = dayjs();
@@ -89,6 +93,12 @@ export function startSchedulers() {
 
   cron.schedule('0 22 * * *', () => {
     sendToAllUsers((user) => (user.sleepHours < 6 ? 'Sleep reminder 😴 Better sleep helps fat loss. Try winding down now.' : 'Sleep well 😴 Recovery is where progress happens.'));
+  });
+
+  cron.schedule('0 19 * * *', () => {
+    sendDailyCoachCheckIn().catch((error) => {
+      console.error('daily check-in scheduler failed', error.message);
+    });
   });
 
   cron.schedule('0 11 * * *', () => {
