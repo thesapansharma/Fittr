@@ -15,7 +15,7 @@ A low-cost WhatsApp AI health coach backend for:
 - MongoDB + Mongoose
 - WhatsApp Cloud API (cheap vs CPaaS intermediaries)
 - node-cron for background reminders
-- Optional OpenAI Responses API for free-form coaching replies
+
 
 ## Quick Start
 
