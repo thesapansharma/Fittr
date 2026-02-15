@@ -2,9 +2,10 @@ import cron from 'node-cron';
 import dayjs from 'dayjs';
 import { listUsersForAutomation } from '../services/coachEngine.js';
 import { sendMessage } from '../services/messagingService.js';
+import { WaterLog } from '../models/WaterLog.js';
+import { Meal } from '../models/Meal.js';
 
 const SCHEDULER_TIMEZONE = 'Asia/Kolkata';
-
 
 function getCurrentTimeInSchedulerTimezone() {
   const nowInSchedulerTz = new Date(new Date().toLocaleString('en-US', { timeZone: SCHEDULER_TIMEZONE }));
@@ -15,12 +16,19 @@ function getCurrentTimeInSchedulerTimezone() {
   };
 }
 
+function getTodayRange() {
+  const start = dayjs().startOf('day').toDate();
+  const end = dayjs().endOf('day').toDate();
+  return { start, end };
+}
+
 async function sendToAllUsers(messageFactory) {
   const users = await listUsersForAutomation();
   await Promise.all(
     users.map(async (user) => {
       try {
-        const msg = messageFactory(user);
+        const msg = await messageFactory(user);
+        if (!msg) return;
         await sendMessage(user.phone, msg);
       } catch (error) {
         console.error(`scheduler send failed for ${user.phone}`, error.message);
@@ -66,9 +74,34 @@ async function sendCustomTimedReminders() {
   );
 }
 
+async function getTodayWaterProgress(userId, waterGoal = 8) {
+  const { start, end } = getTodayRange();
+  const logs = await WaterLog.find({ userId, loggedAt: { $gte: start, $lte: end } });
+  const consumed = logs.reduce((sum, item) => sum + (item.glasses || 0), 0);
+  return { consumed, waterGoal };
+}
+
+async function hasDinnerLoggedToday(userId) {
+  const { start, end } = getTodayRange();
+  const dinner = await Meal.exists({ userId, mealType: 'dinner', mealDate: { $gte: start, $lte: end } });
+  return Boolean(dinner);
+}
 
 async function sendHourlyHydrationReminders() {
-  await sendToAllUsers((user) => `💧 Hourly hydration reminder: drink water now. Target today: ${user.waterGoal} glasses.`);
+  await sendToAllUsers(async (user) => {
+    const { consumed, waterGoal } = await getTodayWaterProgress(user._id, user.waterGoal || 8);
+    return `💧 Hourly hydration reminder\nProgress: ${consumed} / ${waterGoal} glasses\nReply: water 1`;
+  });
+}
+
+async function sendDinnerLoggingPrompts() {
+  await sendToAllUsers(async (user) => {
+    if (await hasDinnerLoggedToday(user._id)) {
+      return null;
+    }
+
+    return "🍲 Dinner log reminder\nPlease send your dinner now in this format:\nmeal dinner dal roti 120";
+  });
 }
 
 async function sendDailyCoachCheckIn() {
@@ -114,6 +147,12 @@ export function startSchedulers() {
   cron.schedule('0 9-21 * * *', () => {
     sendHourlyHydrationReminders().catch((error) => {
       console.error('hourly hydration scheduler failed', error.message);
+    });
+  }, { timezone: SCHEDULER_TIMEZONE });
+
+  cron.schedule('0 19-22 * * *', () => {
+    sendDinnerLoggingPrompts().catch((error) => {
+      console.error('dinner logging scheduler failed', error.message);
     });
   }, { timezone: SCHEDULER_TIMEZONE });
 
