@@ -21,6 +21,7 @@ A low-cost WhatsApp AI health coach backend for:
 ## Documentation
 - Technical documentation: `docs/TECHNICAL.md`
 - User documentation: `docs/USER_GUIDE.md`
+- Daily coach system design: `docs/DAILY_COACH_SYSTEM.md`
 
 ## Quick Start
 
