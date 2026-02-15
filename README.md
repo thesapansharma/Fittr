@@ -62,9 +62,17 @@ ADMIN_PANEL_TOKEN=fitbudget_admin
 - `GET /webhook/whatsapp` verification (if WhatsApp mode)
 - `POST /webhook/whatsapp` incoming message handling
 - `POST /webhook/telegram` incoming Telegram updates (`message`, `edited_message`, `channel_post`, `callback_query`)
+- `POST /webhook` Telegram compatibility endpoint (useful if webhook was set to domain root + `/webhook`)
 - If `TELEGRAM_WEBHOOK_SECRET` is set, header `x-telegram-bot-api-secret-token` is checked. Set `TELEGRAM_STRICT_SECRET=true` to hard-reject mismatches with `403`.
 - Telegram text/caption/callback data are processed by coach engine; non-text Telegram messages get an automatic "text-only" guidance reply.
 
+
+
+### Telegram Webhook Setup
+- Recommended webhook URL: `https://your-domain/webhook/telegram`
+- Compatibility URL (also supported): `https://your-domain/webhook`
+- Fallback root URL also accepted: `https://your-domain/` (POST)
+- If your current webhook is only `https://ftrgn.com` (no path), update it to include `/webhook/telegram` (or `/webhook`).
 
 ## Admin Panel + Test Simulator
 - Open `/admin` for an internal admin dashboard.

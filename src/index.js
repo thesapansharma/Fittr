@@ -24,6 +24,8 @@ app.get('/health', (_req, res) => {
 
 app.use('/webhook/whatsapp', webhookRouter);
 app.use('/webhook/telegram', telegramWebhookRouter);
+app.use('/webhook', telegramWebhookRouter);
+app.use('/', telegramWebhookRouter);
 app.use('/api/register', registerRouter);
 app.use('/api/admin', adminRouter);
 
@@ -41,11 +43,7 @@ app.get('*', (req, res, next) => {
 });
 
 async function start() {
-  await mongoose.connect(config.mongoUri,
-    {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-    });
+  await mongoose.connect(config.mongoUri);
   console.log('Connected to MongoDB');
 
   startSchedulers();
