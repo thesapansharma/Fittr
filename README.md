@@ -121,6 +121,7 @@ Cron schedules included for:
 - All reminder cron jobs run in `Asia/Kolkata` timezone to avoid night-time drift.
 - morning activation
 - afternoon hydration nudge
+- hourly hydration reminder (9 AM to 9 PM IST)
 - evening light-dinner reminder
 - sleep reminders are sent from per-user custom reminder timing (default 22:00)
 - daily automated check-in message for all onboarded users

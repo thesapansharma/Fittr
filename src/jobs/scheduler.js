@@ -66,6 +66,11 @@ async function sendCustomTimedReminders() {
   );
 }
 
+
+async function sendHourlyHydrationReminders() {
+  await sendToAllUsers((user) => `💧 Hourly hydration reminder: drink water now. Target today: ${user.waterGoal} glasses.`);
+}
+
 async function sendDailyCoachCheckIn() {
   await sendToAllUsers((user) => `📘 Daily check-in: log meals, water, and workout today. Budget target: ₹${user.dailyBudget}. Reply 'summary' tonight for progress.`);
 }
@@ -104,6 +109,12 @@ export function startSchedulers() {
 
   cron.schedule('0 14 * * *', () => {
     sendToAllUsers((user) => `Hydration check 💧 You are targeting ${user.waterGoal} glasses today. Add a short walk too.`);
+  }, { timezone: SCHEDULER_TIMEZONE });
+
+  cron.schedule('0 9-21 * * *', () => {
+    sendHourlyHydrationReminders().catch((error) => {
+      console.error('hourly hydration scheduler failed', error.message);
+    });
   }, { timezone: SCHEDULER_TIMEZONE });
 
   cron.schedule('30 20 * * *', () => {
