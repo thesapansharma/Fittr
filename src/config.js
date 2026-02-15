@@ -15,7 +15,8 @@ export const config = {
   },
   telegram: {
     botToken: process.env.TELEGRAM_BOT_TOKEN || '',
-    webhookSecret: process.env.TELEGRAM_WEBHOOK_SECRET || ''
+    webhookSecret: process.env.TELEGRAM_WEBHOOK_SECRET || '',
+    strictWebhookSecret: process.env.TELEGRAM_STRICT_SECRET === 'true'
   },
   openai: {
     apiKey: process.env.OPENAI_API_KEY || '',

@@ -44,6 +44,7 @@ WHATSAPP_VERIFY_TOKEN=fitbudget_verify_token
 WHATSAPP_GRAPH_VERSION=v21.0
 TELEGRAM_BOT_TOKEN=your_telegram_bot_token
 TELEGRAM_WEBHOOK_SECRET=optional_secret
+TELEGRAM_STRICT_SECRET=false
 OPENAI_API_KEY=your_openai_api_key
 OPENAI_MODEL=gpt-4o-mini
 OPENAI_BASE_URL=https://api.openai.com/v1
@@ -61,7 +62,7 @@ ADMIN_PANEL_TOKEN=fitbudget_admin
 - `GET /webhook/whatsapp` verification (if WhatsApp mode)
 - `POST /webhook/whatsapp` incoming message handling
 - `POST /webhook/telegram` incoming Telegram updates (`message`, `edited_message`, `channel_post`, `callback_query`)
-- If `TELEGRAM_WEBHOOK_SECRET` is set, requests must include `x-telegram-bot-api-secret-token`.
+- If `TELEGRAM_WEBHOOK_SECRET` is set, header `x-telegram-bot-api-secret-token` is checked. Set `TELEGRAM_STRICT_SECRET=true` to hard-reject mismatches with `403`.
 - Telegram text/caption/callback data are processed by coach engine; non-text Telegram messages get an automatic "text-only" guidance reply.
 
 

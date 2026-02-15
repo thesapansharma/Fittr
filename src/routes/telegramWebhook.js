@@ -32,8 +32,15 @@ telegramWebhookRouter.post('/', async (req, res) => {
   try {
     if (config.telegram.webhookSecret) {
       const secretHeader = req.get('x-telegram-bot-api-secret-token');
-      if (secretHeader !== config.telegram.webhookSecret) {
+      const isSecretValid = secretHeader === config.telegram.webhookSecret;
+
+      if (!isSecretValid && config.telegram.strictWebhookSecret) {
+        console.warn('Telegram webhook rejected: invalid secret token header.');
         return res.sendStatus(403);
+      }
+
+      if (!isSecretValid && !config.telegram.strictWebhookSecret) {
+        console.warn('Telegram webhook secret mismatch; processing update because TELEGRAM_STRICT_SECRET is disabled.');
       }
     }
 
